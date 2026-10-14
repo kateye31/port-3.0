@@ -29,14 +29,14 @@
         <div class="room room-3d" id="room">
           <canvas id="room-canvas" tabindex="0" aria-label="Interactive 3D bedroom. Drag to rotate. Arrow keys rotate, Home resets. Use the object buttons below to explore."></canvas>
           <div id="room-loading"><span class="loading-flower">✳</span><p>Opening the room…</p><small>A little world, coming to life.</small></div>
-          <button class="object-label" data-object="work">The work <span>↗</span></button>
+          <button class="object-label" data-object="work">Education <span>↗</span></button>
           <button class="object-label" data-object="about">About me <span>↗</span></button>
           <button class="object-label" data-object="cat">Say hello <span>♡</span></button>
-          <button class="object-label" data-object="sketch">Sketchbook <span>↗</span></button>
+          <button class="object-label" data-object="sketch">About me <span>↗</span></button>
           <div class="view-tools"><button id="reset-view" aria-label="Reset room view" title="Reset view">↺</button></div>
         </div>
         <div class="room-caption"><span id="object-hint">Drag to look around · Click an object to explore</span><button id="labels-toggle" aria-pressed="true">Hide labels</button></div>
-        <nav class="room-shortcuts" aria-label="Explore the room"><button data-object="work">Desk</button><button data-object="about">Globe</button><button data-object="notes">Shelf</button><button data-object="play">TV</button><button data-object="bed">Bed</button><button data-object="cat">Cat ♡</button></nav>
+        <nav class="room-shortcuts" aria-label="Explore the room"><button data-object="work">Desk</button><button data-object="about">Globe</button><button data-object="notes">Shelf</button><button data-object="play">TV</button><button data-object="sketchbook">Sketchbook</button><button data-object="bed">Bed</button><button data-object="cat">Cat ♡</button><button id="lamp-toggle" data-object="lamp" aria-label="Toggle room lamp" aria-pressed="true" disabled>Lamp on</button></nav>
         <p class="sr-only" role="status" id="room-status" aria-live="polite">Loading 3D room</p>
       </div>
       <button class="misc-toggle" id="misc-toggle" aria-label="Open miscellaneous menu" aria-expanded="false" aria-controls="misc-menu"><span></span><span></span><span></span><small>MISC.</small></button>

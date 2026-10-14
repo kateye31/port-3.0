@@ -1,0 +1,38 @@
+{
+  "checks": [
+    {
+      "name": "Sketchbook is registered as coral About target",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "Pointer selects sketchbook rather than desk",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "Sketchbook hover uses coral outline and emissive",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "Clicking sketchbook opens About panel",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "Escape closes sketchbook About panel",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "Accessible Sketchbook shortcut opens About",
+      "passed": true,
+      "actual": true
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "failedRequests": [],
+  "result": "passed"
+}

@@ -1,0 +1,165 @@
+{
+  "checks": [
+    {
+      "name": "Model renders with no horizontal overflow",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "Seven interaction groups and real shadow-casting sunlight",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "Top résumé opens honest placeholder",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "Escape restores résumé focus and page scroll",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "Small side menu opens",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "Menu transitions to readable detail dialog",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "Menu-origin dialog restores side-menu focus",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "work shortcut opens detail and selects mesh",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "about shortcut opens detail and selects mesh",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "notes shortcut opens detail and selects mesh",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "play shortcut opens detail and selects mesh",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "bed shortcut opens detail and selects mesh",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "Cat interaction remains in room",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "Hide labels updates visible state and accessibility state",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "Daylight slider changes sun and lamp",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "Keyboard rotation stops at azimuth/pitch limits",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "Home resets camera",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "390px has no horizontal overflow and keeps résumé/menu",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "390px disables room zoom",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "360px has no horizontal overflow and keeps résumé/menu",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "360px disables room zoom",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "768px has no horizontal overflow and keeps résumé/menu",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "768px disables room zoom",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "Mobile detail fits viewport and traps focus",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "Tab stays in modal",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "Reduced motion disables animated reset",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "WebGL failure shows useful fallback",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "Work navigation works without WebGL",
+      "passed": true,
+      "actual": true
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "failedRequests": [],
+  "scene": {
+    "triangles": 1,
+    "groups": [
+      "work",
+      "notes",
+      "play",
+      "about",
+      "bed",
+      "cat",
+      "sketch"
+    ],
+    "camera": [
+      8.181066823787578,
+      9.058392146122449,
+      11.453493553302609
+    ]
+  },
+  "result": "passed"
+}

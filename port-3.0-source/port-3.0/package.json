@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node scripts/serve.mjs",
     "dev": "node scripts/serve.mjs",
-    "check": "node --check dist/app.js && node --check dist/room.js && node checks/validate-room.mjs"
+    "check": "node --check dist/app.js && node --check dist/room.js && node --check dist/cat.js && node --check dist/education.js && node --check dist/art-style.js && node checks/validate-room.mjs && node checks/validate-cat.mjs && node checks/validate-education.mjs && node checks/validate-art-style.mjs"
   },
   "devDependencies": { "three": "0.180.0" }
 }
