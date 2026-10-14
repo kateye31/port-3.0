@@ -1,0 +1,12 @@
+{
+  "name": "katrina-room-portfolio",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "dev": "node scripts/serve.mjs",
+    "check": "node --check dist/app.js && node --check dist/room.js && node checks/validate-room.mjs"
+  },
+  "devDependencies": { "three": "0.180.0" }
+}

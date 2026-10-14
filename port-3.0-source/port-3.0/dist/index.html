@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f4ed">
+  <meta name="description" content="Step inside Katrina’s interactive 3D portfolio. A small room for work, experiments, and the things that inspire them.">
+  <title>Katrina Adewale — A room for ideas</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23f7f4ed'/%3E%3Ctext x='16' y='46' font-size='47' fill='%237c533d'%3E✳%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script type="importmap">{"imports":{"three":"./vendor/three.module.js","three/addons/":"./vendor/addons/"}}</script>
+</head>
+<body>
+  <a class="skip" href="#explore">Skip to portfolio</a>
+  <header class="header">
+    <a class="brand" href="./" aria-label="Katrina Adewale home"><span class="brand-mark" aria-hidden="true">✳</span><span>katrina adewale<span class="brand-dot">.</span></span></a>
+    <nav aria-label="Main navigation"><button data-panel="work">Work</button><button data-panel="about">About</button><button class="resume" data-panel="resume">Résumé <span aria-hidden="true">↗</span></button></nav>
+  </header>
+  <main id="explore">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="intro">
+        <p class="eyebrow"><span class="tiny-line"></span> A PORTFOLIO, WITH A LITTLE PERSONALITY</p>
+        <h1 id="hero-title">A little space<br>for <em>big ideas.</em></h1>
+        <p class="welcome">Hi, I’m Katrina.<br>Welcome to my corner of the internet.</p>
+        <button class="primary" data-panel="work">View my work <span aria-hidden="true">↗</span></button>
+        <p class="handnote">or make yourself at home <svg viewBox="0 0 74 40" aria-hidden="true"><path d="M2 5C22 3 22 35 60 25M52 19l10 6-9 7"/></svg></p>
+      </div>
+      <div class="room-column">
+        <div class="room-heading"><span>THE STUDIO</span><span class="room-number">01 / A ROOM FOR IDEAS</span></div>
+        <div class="room room-3d" id="room">
+          <canvas id="room-canvas" tabindex="0" aria-label="Interactive 3D bedroom. Drag to rotate. Arrow keys rotate, Home resets. Use the object buttons below to explore."></canvas>
+          <div id="room-loading"><span class="loading-flower">✳</span><p>Opening the room…</p><small>A little world, coming to life.</small></div>
+          <button class="object-label" data-object="work">The work <span>↗</span></button>
+          <button class="object-label" data-object="about">About me <span>↗</span></button>
+          <button class="object-label" data-object="cat">Say hello <span>♡</span></button>
+          <button class="object-label" data-object="sketch">Sketchbook <span>↗</span></button>
+          <div class="view-tools"><button id="reset-view" aria-label="Reset room view" title="Reset view">↺</button></div>
+        </div>
+        <div class="room-caption"><span id="object-hint">Drag to look around · Click an object to explore</span><button id="labels-toggle" aria-pressed="true">Hide labels</button></div>
+        <nav class="room-shortcuts" aria-label="Explore the room"><button data-object="work">Desk</button><button data-object="about">Globe</button><button data-object="notes">Shelf</button><button data-object="play">TV</button><button data-object="bed">Bed</button><button data-object="cat">Cat ♡</button></nav>
+        <p class="sr-only" role="status" id="room-status" aria-live="polite">Loading 3D room</p>
+      </div>
+      <button class="misc-toggle" id="misc-toggle" aria-label="Open miscellaneous menu" aria-expanded="false" aria-controls="misc-menu"><span></span><span></span><span></span><small>MISC.</small></button>
+    </section>
+    <footer class="footer"><div class="footer-note"><span class="live-dot" aria-hidden="true"></span> A small space. Always evolving.</div><div class="light-control"><span aria-hidden="true">☀</span><label for="daylight">Afternoon light</label><input id="daylight" type="range" min="0" max="100" value="100" aria-label="Room daylight intensity"><span class="light-state" id="light-state">4:00 PM</span></div><span class="footer-credit">Made with curiosity <span aria-hidden="true">✧</span></span></footer>
+  </main>
+  <dialog id="misc-menu" class="menu-dialog" aria-labelledby="menu-title"><div class="menu-top"><span class="eyebrow">THE LITTLE EXTRAS</span><button class="close" data-close aria-label="Close menu">×</button></div><h2 id="menu-title">Around the room.</h2><nav aria-label="Miscellaneous"><button data-panel="play"><span>01</span> Sketchbook <b>↗</b></button><button data-panel="notes"><span>02</span> On the shelf <b>↗</b></button><button data-panel="about"><span>03</span> About this corner <b>↗</b></button><button data-panel="resume"><span>04</span> Résumé <b>↗</b></button></nav><p>A place for the work, and everything that goes into it.</p><div class="menu-flower" aria-hidden="true">✳</div></dialog>
+  <dialog id="detail" class="detail-dialog" aria-labelledby="detail-title"><button class="close detail-close" data-close aria-label="Close detail">×</button><div id="detail-content"></div></dialog>
+  <script src="app.js"></script>
+  <script type="module" src="room.js"></script>
+</body>
+</html>
