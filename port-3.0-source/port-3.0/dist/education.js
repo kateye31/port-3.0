@@ -39,15 +39,6 @@ export function addEducationWall(model) {
     box(card,`${card.name}_paper`,[.74,.265,.009],[0,0,0],paper,print(`${card.name}_lettering`,lines,i===1?'#E4EFDF':'#FFF1DA','#384447',1024,360));
     const pin=new THREE.Mesh(new THREE.SphereGeometry(.018,12,8),mint);pin.name=`education_pin_${i+1}`;pin.position.set(0,.108,.017);card.add(pin);
   });
-  const books=group('education_textbooks','education_books',1.8);
-  box(books,'textbook_wall_shelf',[1.0,.055,.43],[0,0,.17],wood);
-  for(const [i,label] of ['COMPUTER SCIENCE','ROBOTICS','ALGORITHMS'].entries()){
-    const book=new THREE.Group();book.name=`textbook_${i+1}`;book.position.set([0,.025,-.02][i],.07+i*.083,.19);book.rotation.y=THREE.MathUtils.degToRad([2,-3,4][i]);books.add(book);
-    const cover=new THREE.MeshStandardMaterial({name:`textbook_${i+1}_cover`,color:['#557E60','#9DBBC2','#C48166'][i],roughness:.95});
-    box(book,`${book.name}_pages`,[.73,.058,.30],[0,0,0],paper);
-    for(const sign of [-1,1])box(book,`${book.name}_cover_${sign}`,[.78,.012,.34],[0,sign*.035,0],cover);
-    box(book,`${book.name}_spine`,[.78,.07,.018],[0,0,.166],cover,print(`${book.name}_title`,[label],['#557E60','#9DBBC2','#C48166'][i],i===0?'#FFF1DA':'#283E40',1024,128));
-  }
   model.updateMatrixWorld(true);
-  return [diploma,board,books];
+  return [diploma,board];
 }

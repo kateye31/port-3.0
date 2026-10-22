@@ -1,51 +1,110 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f7f4ed">
-  <meta name="description" content="Step inside Katrina’s interactive 3D portfolio. A small room for work, experiments, and the things that inspire them.">
-  <title>Katrina Adewale — A room for ideas</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23f7f4ed'/%3E%3Ctext x='16' y='46' font-size='47' fill='%237c533d'%3E✳%3C/text%3E%3C/svg%3E">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#FFC49B">
+  <meta name="description" content="Katrina Adewale: software engineer and UCF Computer Science student. Walk around her room to see projects, experience and her résumé.">
+  <title>Katrina Adewale</title>
+  <link rel="icon" type="image/png" href="assets/drawn/star-cat-icon.png">
+  <link rel="preload" href="assets/fonts/ChewyPro.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="assets/fonts/Rubik-Regular.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="assets/drawn/sketch.webp" as="image">
   <link rel="stylesheet" href="styles.css">
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js","three/addons/":"./vendor/addons/"}}</script>
 </head>
-<body>
-  <a class="skip" href="#explore">Skip to portfolio</a>
-  <header class="header">
-    <a class="brand" href="./" aria-label="Katrina Adewale home"><span class="brand-mark" aria-hidden="true">✳</span><span>katrina adewale<span class="brand-dot">.</span></span></a>
-    <nav aria-label="Main navigation"><button data-panel="work">Work</button><button data-panel="about">About</button><button class="resume" data-panel="resume">Résumé <span aria-hidden="true">↗</span></button></nav>
+<body data-view="loading">
+  <a class="skip" href="#panel">Skip to the content</a>
+
+  <div class="stage" id="stage">
+    <canvas id="room-canvas" aria-label="Katrina's 3D bedroom. Click an object to open a section; drag to look around."></canvas>
+  </div>
+
+  <div class="loader" id="loader" role="status" aria-live="polite">
+    <div class="loader-sketch"><img src="assets/drawn/sketch.webp" alt="" width="870" height="1014"></div>
+    <p class="loader-note"><span id="loader-text">unpacking the room</span> <span id="loader-pct" class="tabular">0%</span></p>
+  </div>
+
+  <header class="topbar">
+    <a class="mark" href="#" data-go="home" aria-label="Katrina Adewale, back to the room">
+      <img src="assets/drawn/name.webp" alt="" width="772" height="345">
+    </a>
+    <nav class="topnav" aria-label="Main">
+      <p class="status">
+        <span class="status-time"><i class="status-dot" aria-hidden="true"></i><b id="clock-time" class="tabular">&nbsp;</b> in Orlando<span class="status-phase"> · <span id="clock-phase"></span></span></span>
+        <span class="status-views" id="views-wrap" hidden><b id="views" class="tabular"></b> <span id="views-word">visits</span></span>
+      </p>
+      <button class="chip chip-work" id="nav-work" data-go="projects" aria-current="false">Work</button>
+      <a class="chip chip-resume" href="assets/katrina-adewale-resume.pdf" target="_blank" rel="noopener">Résumé</a>
+      <button class="chip chip-menu" id="menu-button" aria-expanded="false" aria-controls="menu">Menu</button>
+    </nav>
   </header>
-  <main id="explore">
-    <section class="hero" aria-labelledby="hero-title">
-      <div class="intro">
-        <p class="eyebrow"><span class="tiny-line"></span> A PORTFOLIO, WITH A LITTLE PERSONALITY</p>
-        <h1 id="hero-title">A little space<br>for <em>big ideas.</em></h1>
-        <p class="welcome">Hi, I’m Katrina.<br>Welcome to my corner of the internet.</p>
-        <button class="primary" data-panel="work">View my work <span aria-hidden="true">↗</span></button>
-        <p class="handnote">or make yourself at home <svg viewBox="0 0 74 40" aria-hidden="true"><path d="M2 5C22 3 22 35 60 25M52 19l10 6-9 7"/></svg></p>
+
+  <section class="hero" aria-labelledby="hero-name">
+    <div class="hero-title">
+      <h1 id="hero-name" class="hero-name"><img src="assets/drawn/name.webp" alt="Katrina Adewale" width="772" height="345"></h1>
+      <img class="star-cat" src="assets/drawn/star-cat.webp" alt="Katrina's drawing of a ginger cat in a yellow star costume" width="800" height="732">
+    </div>
+    <p class="hero-role">Software engineer &amp; robotics student at UCF. IIoT Solutions Engineer at Lockheed Martin.</p>
+    <p class="hero-note">this is my room. click anything in it.</p>
+    <button class="tour" data-go="about">
+      <span>Take the tour</span>
+      <img src="assets/drawn/scribble-b.webp" alt="" width="986" height="506">
+    </button>
+  </section>
+
+  <div class="hotspots" id="hotspots" aria-label="Sections in the room"></div>
+
+  <section class="scene" id="scene" aria-live="polite">
+    <div class="sheet" id="sheet">
+      <div class="sheet-fill" aria-hidden="true"></div>
+      <img class="sheet-line" src="assets/drawn/corner-line.png" alt="" width="1200" height="1016">
+      <div class="sheet-title">
+        <h2 class="sheet-heading" id="sheet-heading"></h2>
+        <p class="sheet-note" id="sheet-note"></p>
       </div>
-      <div class="room-column">
-        <div class="room-heading"><span>THE STUDIO</span><span class="room-number">01 / A ROOM FOR IDEAS</span></div>
-        <div class="room room-3d" id="room">
-          <canvas id="room-canvas" tabindex="0" aria-label="Interactive 3D bedroom. Drag to rotate. Arrow keys rotate, Home resets. Use the object buttons below to explore."></canvas>
-          <div id="room-loading"><span class="loading-flower">✳</span><p>Opening the room…</p><small>A little world, coming to life.</small></div>
-          <button class="object-label" data-object="work">Education <span>↗</span></button>
-          <button class="object-label" data-object="about">About me <span>↗</span></button>
-          <button class="object-label" data-object="cat">Say hello <span>♡</span></button>
-          <button class="object-label" data-object="sketch">About me <span>↗</span></button>
-          <div class="view-tools"><button id="reset-view" aria-label="Reset room view" title="Reset view">↺</button></div>
-        </div>
-        <div class="room-caption"><span id="object-hint">Drag to look around · Click an object to explore</span><button id="labels-toggle" aria-pressed="true">Hide labels</button></div>
-        <nav class="room-shortcuts" aria-label="Explore the room"><button data-object="work">Desk</button><button data-object="about">Globe</button><button data-object="notes">Shelf</button><button data-object="play">TV</button><button data-object="sketchbook">Sketchbook</button><button data-object="bed">Bed</button><button data-object="cat">Cat ♡</button><button id="lamp-toggle" data-object="lamp" aria-label="Toggle room lamp" aria-pressed="true" disabled>Lamp on</button></nav>
-        <p class="sr-only" role="status" id="room-status" aria-live="polite">Loading 3D room</p>
+    </div>
+    <div class="monitor-arrows">
+      <button class="m-arrow m-prev" data-project-step="-1" data-cursor="prev" aria-label="Previous project"><img src="assets/drawn/scribble-a.webp" alt="" width="986" height="506"></button>
+      <button class="m-arrow m-next" data-project-step="1" data-cursor="next" aria-label="Next project"><img src="assets/drawn/scribble-b.webp" alt="" width="986" height="506"></button>
+    </div>
+    <article class="panel" id="panel" tabindex="-1" aria-labelledby="sheet-heading">
+      <div class="panel-inner" id="panel-inner"></div>
+    </article>
+    <nav class="steps" aria-label="Walk the room">
+      <button class="step step-prev" id="step-prev" data-cursor="prev"><img src="assets/drawn/scribble-a.webp" alt="" width="986" height="506"><span></span></button>
+      <button class="step step-home" data-go="home">back to the room</button>
+      <button class="step step-next" id="step-next" data-cursor="next"><span></span><img src="assets/drawn/scribble-b.webp" alt="" width="986" height="506"></button>
+    </nav>
+  </section>
+
+  <div class="menu" id="menu" hidden>
+    <div class="menu-sheet" role="dialog" aria-modal="true" aria-label="Menu">
+      <button class="menu-close" id="menu-close" aria-label="Close menu"><img src="assets/drawn/scribble-a.webp" alt="" width="986" height="506"></button>
+      <ul class="menu-list" id="menu-list"></ul>
+      <div class="menu-foot">
+        <a href="mailto:katwale797@gmail.com">katwale797@gmail.com</a>
+        <a href="https://github.com/kateye31" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://linkedin.com/in/katrina-adewale" target="_blank" rel="noopener">LinkedIn</a>
+        <button id="lamp-button" aria-pressed="true">lamp: on</button>
       </div>
-      <button class="misc-toggle" id="misc-toggle" aria-label="Open miscellaneous menu" aria-expanded="false" aria-controls="misc-menu"><span></span><span></span><span></span><small>MISC.</small></button>
-    </section>
-    <footer class="footer"><div class="footer-note"><span class="live-dot" aria-hidden="true"></span> A small space. Always evolving.</div><div class="light-control"><span aria-hidden="true">☀</span><label for="daylight">Afternoon light</label><input id="daylight" type="range" min="0" max="100" value="100" aria-label="Room daylight intensity"><span class="light-state" id="light-state">4:00 PM</span></div><span class="footer-credit">Made with curiosity <span aria-hidden="true">✧</span></span></footer>
-  </main>
-  <dialog id="misc-menu" class="menu-dialog" aria-labelledby="menu-title"><div class="menu-top"><span class="eyebrow">THE LITTLE EXTRAS</span><button class="close" data-close aria-label="Close menu">×</button></div><h2 id="menu-title">Around the room.</h2><nav aria-label="Miscellaneous"><button data-panel="play"><span>01</span> Sketchbook <b>↗</b></button><button data-panel="notes"><span>02</span> On the shelf <b>↗</b></button><button data-panel="about"><span>03</span> About this corner <b>↗</b></button><button data-panel="resume"><span>04</span> Résumé <b>↗</b></button></nav><p>A place for the work, and everything that goes into it.</p><div class="menu-flower" aria-hidden="true">✳</div></dialog>
-  <dialog id="detail" class="detail-dialog" aria-labelledby="detail-title"><button class="close detail-close" data-close aria-label="Close detail">×</button><div id="detail-content"></div></dialog>
-  <script src="app.js"></script>
-  <script type="module" src="room.js"></script>
+    </div>
+  </div>
+
+  <p class="room-hint" id="room-hint">drag to look around</p>
+
+  <div class="cursor" id="cursor" aria-hidden="true">
+    <div class="cursor-body">
+      <img class="c-dot" src="assets/drawn/cursor-dot.webp" alt="">
+      <img class="c-enter" src="assets/drawn/cursor-enter.webp" alt="">
+      <img class="c-next" src="assets/drawn/cursor-next.webp" alt="">
+      <img class="c-prev" src="assets/drawn/cursor-prev.webp" alt="">
+    </div>
+    <span class="cursor-label" id="cursor-label"></span>
+  </div>
+
+  <p class="sr-only" id="announce" aria-live="polite"></p>
+  <noscript><p class="noscript">This room needs JavaScript. Katrina’s <a href="assets/katrina-adewale-resume.pdf">résumé</a> has everything in one page.</p></noscript>
+  <script type="module" src="ui.js"></script>
 </body>
 </html>

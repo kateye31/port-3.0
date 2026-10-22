@@ -6,7 +6,12 @@
   "scripts": {
     "start": "node scripts/serve.mjs",
     "dev": "node scripts/serve.mjs",
-    "check": "node --check dist/app.js && node --check dist/room.js && node --check dist/cat.js && node --check dist/education.js && node --check dist/art-style.js && node checks/validate-room.mjs && node checks/validate-cat.mjs && node checks/validate-education.mjs && node checks/validate-art-style.mjs"
+    "check": "node --check dist/ui.js && node --check dist/room.js && node --check dist/furnish.js && node --check dist/cat.js && node --check dist/education.js && node --check dist/art-style.js && node --check dist/sections.js && node --check dist/content.js",
+    "qa": "node checks/site-qa.mjs",
+    "shots": "node checks/shots.mjs"
   },
-  "devDependencies": { "three": "0.180.0" }
+  "devDependencies": {
+    "playwright": "^1.56.1",
+    "three": "0.180.0"
+  }
 }
