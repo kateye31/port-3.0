@@ -60,11 +60,11 @@ export const PROJECTS = [
 ];
 
 export const EXPERIENCE = [
-  { when: 'Oct 2026 – now', role: 'IIoT Solutions Engineer', org: 'Lockheed Martin',
+  { when: 'Oct 2026 – now', role: 'IIoT Solutions Engineer', org: 'Lockheed Martin', logo: 'lockheed-martin.png',
     text: 'Digital transformation for IIoT in production manufacturing: dashboard analytics UX for business-area insights, integrated into an AWS cloud solution set.' },
-  { when: 'Sept 2026 – now', role: 'Engineering Ambassador', org: 'UCF Center for Initiatives in STEM (iSTEM) · Orlando, FL',
+  { when: 'Sept 2026 – now', role: 'Engineering Ambassador', org: 'UCF Center for Initiatives in STEM (iSTEM) · Orlando, FL', logo: 'stem.webp',
     text: 'Representing UCF Computer Science at 5+ K-12 school visits and campus events, reaching 6,000+ students.' },
-  { when: 'Aug 2025 – now', role: 'Software Engineer Intern', org: 'UCF Transfer Connect',
+  { when: 'Aug 2025 – now', role: 'Software Engineer Intern', org: 'UCF Transfer Connect', logo: 'ucf.png',
     text: 'Automated Excel lookups across 40,000+ cells, cut inconsistency detection time 50%+ across 300+ files, and shipped a tool that processes 3,000+ data points in seconds.' },
   { when: 'Jan – May 2026', role: 'Data Science Research Intern', org: 'Spatial Analysis Lab',
     text: 'Python statistics and modeling on how natural disasters affect resource availability; co-authored a research paper.' },

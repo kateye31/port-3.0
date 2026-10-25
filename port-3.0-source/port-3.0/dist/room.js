@@ -17,6 +17,10 @@ import { applyArtStyle, createInkPass } from './art-style.js';
 //   room:hover  {key, section}   pointer is over an interactive object (or null)
 //   room:pick   {key, section}   an object was clicked/tapped
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Layout modes, kept in step with styles.css: stacked = name/room/bottom sheet
+// (phones, portrait tablets); short = side-by-side squeezed into a landscape phone.
+const STACKED = matchMedia('(max-width: 759px) and (min-height: 501px), (max-width: 1100px) and (orientation: portrait)');
+const SHORT = matchMedia('(max-height: 500px) and (orientation: landscape)');
 const HOME_TARGET = new THREE.Vector3(0, 1.45, 0), HOME_DIR = new THREE.Vector3(10, 9.3, 14).normalize();
 const lampColor = new THREE.Color('#FFD9A0');
 const easeInOut = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -64,6 +68,8 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
   const model = gltf.scene; scene.add(model); model.updateMatrixWorld(true);
 
   const furniture = await furnish(model);
+  // ?debug exposes the scene to checks/ scripts for close-up prop inspection.
+  if (new URLSearchParams(location.search).has('debug')) window.__room = { scene, camera, controls, model, THREE };
   addEducationWall(model);
   inkPass.selectedObjects = applyArtStyle(model);
   const cat = await createCat(model, { reduced });
@@ -192,9 +198,9 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
     for (const key of s.frame || section.objects) box.expandByObject(objects.get(key) || model.getObjectByName(key));
     const sphere = box.getBoundingSphere(new THREE.Sphere());
     const radius = Math.max(sphere.radius, s.minRadius || 0);
-    const phone = width < 760, vFov = THREE.MathUtils.degToRad(camera.fov);
+    const phone = STACKED.matches, vFov = THREE.MathUtils.degToRad(camera.fov);
     // Usable viewport: ~58% of the width beside the panel, or ~44% of the height above it.
-    const usableW = phone ? .9 : .46, usableH = phone ? .36 : .78;
+    const usableW = phone ? .9 : SHORT.matches ? .42 : .46, usableH = phone ? .36 : .78;
     const hFov = 2 * Math.atan(Math.tan(vFov / 2) * camera.aspect * usableW);
     const fov = Math.min(hFov, 2 * Math.atan(Math.tan(vFov / 2) * usableH));
     const distance = radius * (s.fit || 1.15) / Math.sin(fov / 2);
@@ -211,11 +217,12 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
   function framing() {
     // Leave room for the page: name on the left at home, content on the
     // right (desktop) or bottom (phone) inside a section.
-    const phone = width < 760;
-    if (mode === 'home') { shift.tx = phone ? 0 : -.235; shift.ty = phone ? -.2 : 0; }
+    const phone = STACKED.matches;
+    if (mode === 'home') { shift.tx = phone ? 0 : SHORT.matches ? -.2 : -.235; shift.ty = phone ? (width >= 760 ? -.17 : -.2) : 0; }
     else {
-      // Centre the object in the space left of the panel (panel = min(500px, 38vw) + gutter).
-      const free = width - Math.min(500, width * .38) - Math.min(72, Math.max(16, width * .045));
+      // Centre the object in the space left of the panel (its width per styles.css, plus the gutter).
+      const panel = SHORT.matches ? width * .48 + 12 : width <= 1100 ? width * .44 + Math.max(16, width * .045) : Math.min(500, width * .38) + Math.min(72, Math.max(16, width * .045));
+      const free = width - panel;
       shift.tx = phone ? 0 : .5 - free / 2 / width; shift.ty = phone ? .22 : -.05;
     }
   }
@@ -225,6 +232,7 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
     camera.aspect = width / height;
     const aspect = width / height;
     homeDistance = aspect < .62 ? 25 : aspect < .8 ? 22 : aspect < 1.1 ? 19.5 : 17.5;
+    if (STACKED.matches && width >= 760) homeDistance += 3;   // portrait tablet: leave the name its own band
     controls.minDistance = homeDistance * .8; controls.maxDistance = homeDistance * 1.2;
     framing();
     if (!flight) {

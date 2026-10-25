@@ -1,0 +1,4 @@
+Experience logos (PNG renders from Wikimedia Commons, public domain as logos/trademarks; used to identify Katrina's employers):
+lockheed-martin.png  https://commons.wikimedia.org/wiki/File:Lockheed_Martin_logo_(2).svg
+ucf.png              https://commons.wikimedia.org/wiki/File:UCF_Knights_logo.svg
+Other files here (stem, gwc, bsides, weecs, krs) came with Katrina's own assets.

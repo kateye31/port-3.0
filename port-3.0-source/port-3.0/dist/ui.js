@@ -6,6 +6,8 @@ const $ = s => document.querySelector(s);
 const body = document.body;
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const finePointer = matchMedia('(hover: hover) and (pointer: fine)').matches;
+// Same query as room.js and styles.css: phones and portrait tablets get the bottom sheet.
+const stacked = matchMedia('(max-width: 759px) and (min-height: 501px), (max-width: 1100px) and (orientation: portrait)');
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 let room = null, current = null, projectIndex = 0, lastFocus = null;
 
@@ -68,6 +70,11 @@ const render = {
     </div>
     ${p.photos ? `<div class="project-photos">${p.photos.map((ph, i) => `<figure class="polaroid ${i % 2 ? 'tilt-r' : 'tilt-l'}">${photo(ph.image, ph.alt)}<figcaption>${esc(ph.caption)}</figcaption></figure>`).join('')}</div>` : ''}
     <ol class="project-dots" aria-label="All projects">${PROJECTS.map((x, i) => `<li><button data-project-jump="${i}" aria-current="${i === projectIndex}" aria-label="${esc(x.title)}"><span>${esc(x.title)}</span></button></li>`).join('')}</ol>
+    <nav class="project-pager" aria-label="Flip through projects">
+      <button class="pp-btn pp-prev" data-project-step="-1" data-cursor="prev" aria-label="Previous project"><img src="assets/drawn/scribble-a.webp" alt="" width="986" height="506"></button>
+      <p class="pp-now"><span class="pp-count tabular">project ${projectIndex + 1} / ${PROJECTS.length}</span><b class="pp-title">${esc(p.title)}</b></p>
+      <button class="pp-btn pp-next" data-project-step="1" data-cursor="next" aria-label="Next project"><img src="assets/drawn/scribble-b.webp" alt="" width="986" height="506"></button>
+    </nav>
     <p class="aside">${p.media.video ? 'The demo is playing on the computer.' : p.media.image.includes('photos/') ? 'Photo: Unsplash, until a demo is ready.' : 'On the computer: a screenshot of the project.'}</p>`;
   },
   books: () => `
@@ -75,7 +82,7 @@ const render = {
     <ul class="book-grid">${BOOKS.map((b, i) => `<li style="--r:${[-2, 1.5, -1, 2, -1.5, 1][i % 6]}deg"><img src="assets/books/${b.image}.webp" alt="" loading="lazy"><b>${esc(b.title)}</b><span>${esc(b.author)}</span></li>`).join('')}</ul>`,
   experience: () => `
     <ol class="timeline">${EXPERIENCE.map(e => `
-      <li><p class="hand when">${esc(e.when)}</p><h3>${esc(e.role)}</h3><p class="org">${esc(e.org)}</p><p>${esc(e.text)}</p></li>`).join('')}
+      <li>${e.logo ? `<span class="exp-logo"><img src="assets/orgs/${e.logo}" alt="" loading="lazy"></span>` : ''}<p class="hand when">${esc(e.when)}</p><h3>${esc(e.role)}</h3><p class="org">${esc(e.org)}</p><p>${esc(e.text)}</p></li>`).join('')}
     </ol>
     <h3 class="hand">hackathons, shadows &amp; showing up</h3>
     <ul class="moments">${MOMENTS.map(m => `<li><span class="hand when">${esc(m.when)}</span><b>${esc(m.what)}</b><span>${esc(m.note)}</span></li>`).join('')}</ul>`,
@@ -276,7 +283,7 @@ function placeHotspots(points) {
     const p = points[id];
     let x = p.x + (id === 'monitorL' ? -64 : 64);
     // Never tuck the right arrow under the panel.
-    const edge = innerWidth >= 760 ? $('#panel').getBoundingClientRect().left - 48 : innerWidth - 40;
+    const edge = !stacked.matches ? $('#panel').getBoundingClientRect().left - 48 : innerWidth - 40;
     if (id === 'monitorR') x = Math.min(x, edge);
     el.style.transform = `translate3d(${x}px, ${p.y}px, 0)`;
   }

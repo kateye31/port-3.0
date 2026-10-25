@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { BADGES } from './content.js';
+import { addLivedInDetails, applyBedQuilt, fillBookshelf } from './props.js';
 
 // Furniture follows Katrina's room sketch (assets/drawn/sketch.webp): coat rack
 // front-left, desk under the window, bookshelf in the back corner, TV with the
@@ -25,11 +26,6 @@ const PLACEMENTS = [
   ['k-coatRackStanding', [-2.72, F, 2.62], 15, K, 'coatrack'],
   ['k-bookcaseOpen', [-2.3, F, -2.42], 0, K, 'bookshelf'],
   ['k-pottedPlant', [-2.95, F, -1.35], 0, K, null],
-  ['k-books', [-2.62, F + 3.08 * 0.2, -2.45], 0, K, 'bookshelf'],
-  ['k-books', [-2.05, F + 3.08 * 0.2, -2.42], 12, K, 'bookshelf'],
-  ['k-books', [-2.55, F + 3.08 * 0.48, -2.45], -6, K, 'bookshelf'],
-  ['k-books', [-2, F + 3.08 * 0.48, -2.43], 0, K, 'bookshelf'],
-  ['k-books', [-2.48, F + 3.08 * 0.78, -2.44], 8, K, 'bookshelf'],
   ['k-cabinetTelevision', [.05, F, -2.45], 0, K, 'tv'],
   ['k-televisionModern', [.38, null, -2.5], 0, K * .85, 'tv', 'k-cabinetTelevision'],
   ['record-player', [-.98, null, -2.42], 12, .00048, 'record', 'k-cabinetTelevision'],
@@ -51,6 +47,17 @@ const SCREENS = {
   monitor: { w: .379, h: .231, y: .1715, z: .0006, tilt: Math.atan2(.032, .231) },
 };
 
+// Collected over time: paint and timber finishes vary by piece, not by model.
+const FINISHES = {
+  'k-bookcaseOpen': '#A8B29A',
+  'k-cabinetTelevision': '#76503F',
+  'k-cabinetBed': '#E2D4BD',
+  'k-coatRackStanding': '#855C4B',
+  'k-tableRound': '#B87D68',
+  // The TV is a black set, not the kit's grey: by material name.
+  'k-televisionModern': { metalDark: '#141216', metal: '#222026' },
+};
+
 export async function furnish(model) {
   const retired = [];
   model.traverse(o => { if (RETIRED.some(r => r.test(o.name))) retired.push(o); });
@@ -70,12 +77,17 @@ export async function furnish(model) {
   for (const [file, pos, deg, scale, key, sitsOn] of PLACEMENTS) {
     const item = normalize(cache.get(file).clone(true), scale);
     item.name = file;
+    applyFinish(item, file);
+    if (file === 'k-bedSingle') applyBedQuilt(item);
     item.rotation.y = THREE.MathUtils.degToRad(deg);
     item.position.set(pos[0], pos[1] ?? placed.get(sitsOn).top, pos[2]);
     item.updateMatrixWorld(true);
     placed.set(file, { object: item, top: new THREE.Box3().setFromObject(item).max.y });
     groupFor(key).add(item);
   }
+
+  await fillBookshelf(groupFor('bookshelf'));
+  await addLivedInDetails(model, groups);
 
   // The painting on the back wall belongs to About, with the globe and easel.
   const painting = groupFor('painting');
@@ -90,6 +102,17 @@ export async function furnish(model) {
   const record = recordOn(placed.get('record-player').object);
   model.updateMatrixWorld(true);
   return { lampBulb: placed.get('k-lampRoundTable').object, monitor, tv, book, record, screenObject: placed.get('k-computerScreen').object, tvObject: placed.get('k-televisionModern').object };
+}
+
+function applyFinish(item, file) {
+  const finish = FINISHES[file]; if (!finish) return;
+  const colorFor = name => typeof finish === 'string' ? (name === 'wood' ? finish : null) : finish[name];
+  item.traverse(o => {
+    if (!o.isMesh) return;
+    const materials = Array.isArray(o.material) ? o.material : [o.material];
+    o.material = materials.map(m => { const c = m.clone(), color = colorFor(m.name); if (color) { c.color.set(color); c.map = null; c.roughness = .95; } return c; });
+    if (o.material.length === 1) o.material = o.material[0];
+  });
 }
 
 // Pieces built in code rather than loaded, in room units (scale 1).
