@@ -222,7 +222,7 @@ function recordOn(player) {
   const box = new THREE.Box3().setFromObject(platter || player), c = box.getCenter(new THREE.Vector3()), r = (box.max.x - box.min.x) / 2 * .96;
   const disk = new THREE.Group(); disk.name = 'vinyl';
   const vinyl = new THREE.Mesh(new THREE.CylinderGeometry(r, r, .008, 64), new THREE.MeshStandardMaterial({ color: '#141218', roughness: .45 }));
-  const groove = new THREE.Mesh(new THREE.RingGeometry(r * .45, r * .93, 64), new THREE.MeshStandardMaterial({ color: '#2A2730', roughness: .35 }));
+  const groove = new THREE.Mesh(new THREE.RingGeometry(r * .45, r * .93, 64), new THREE.MeshStandardMaterial({ map: grooveTexture(), roughness: .35 }));
   groove.rotation.x = -Math.PI / 2; groove.position.y = .0045;
   const labelMat = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: .8 });
   const label = new THREE.Mesh(new THREE.CircleGeometry(r * .4, 48), labelMat);
@@ -230,6 +230,25 @@ function recordOn(player) {
   disk.add(vinyl, groove, label); disk.position.set(c.x, box.max.y + .005, c.z);
   vinyl.castShadow = true; player.parent.add(disk);
   return { disk, label: labelMat };
+}
+
+// Grooves, plus a few brighter arcs where the needle has worn the track: the
+// arcs turn with the disk, so you can actually see the record spinning.
+function grooveTexture() {
+  const S = 256, c = document.createElement('canvas'); c.width = c.height = S;
+  const ctx = c.getContext('2d'); ctx.fillStyle = '#211E27'; ctx.fillRect(0, 0, S, S);
+  const inner = S / 2 * .45 / .93;
+  for (let rad = inner; rad < S / 2; rad += 2.2) {
+    ctx.strokeStyle = `rgba(${rad % 6.6 < 2.2 ? '70,64,82' : '14,12,18'},.9)`; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(S / 2, S / 2, rad, 0, Math.PI * 2); ctx.stroke();
+  }
+  ctx.lineCap = 'round';
+  for (const [rad, from, len, a] of [[.62, .2, 1.1, .5], [.78, 2.4, .8, .42], [.9, 4.1, 1.3, .36], [.7, 5.2, .5, .3]]) {
+    ctx.strokeStyle = `rgba(190,182,206,${a})`; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(S / 2, S / 2, rad * S / 2, from, from + len); ctx.stroke();
+  }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  return t;
 }
 
 function addScreen(wrap, s) {
