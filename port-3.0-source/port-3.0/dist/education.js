@@ -28,8 +28,12 @@ export function addEducationWall(model) {
   const diploma=group('frame_degree','diploma',3.59);
   box(diploma,'diploma_frame',[.94,.72,.08],[0,0,0],wood);
   box(diploma,'diploma_mat',[.84,.62,.012],[0,0,.046],paper);
-  box(diploma,'diploma_print',[.75,.53,.008],[0,0,.057],paper,
-    print('diploma_lettering',['UNIVERSITY OF CENTRAL FLORIDA','B.S. Computer Science','Expected Dec 2027'], '#FFF1DA','#384447',1024,720));
+  const diplomaPrint=print('diploma_lettering',['UNIVERSITY OF CENTRAL FLORIDA','B.S. Computer Science','Expected Dec 2027'], '#FFF1DA','#384447',1024,720);
+  box(diploma,'diploma_print',[.75,.53,.008],[0,0,.057],paper,diplomaPrint);
+  // The UCF seal in the bottom-left corner, clear of the centred lettering.
+  const seal=new Image();
+  seal.onload=()=>{const c=diplomaPrint.map.image,ctx=c.getContext('2d');ctx.drawImage(seal,52,c.height-212,160,160);diplomaPrint.map.needsUpdate=true;};
+  seal.src='assets/ucf-seal.svg';
   const board=group('education_corkboard','education_board',2.67);
   box(board,'corkboard_frame',[.94,1.08,.065],[0,0,0],wood);
   box(board,'corkboard_surface',[.85,.99,.018],[0,0,.038],cork);

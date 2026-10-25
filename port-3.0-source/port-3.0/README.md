@@ -39,5 +39,5 @@ npm run shots      # quick screenshots into checks/shots/
 - Hand-drawn UI (cursor states, arrows, torn corner, lettering, sketch, blue card): Katrina.
 - Furniture: Kenney Furniture Kit (CC0). Cat by elkiotbear, globe by jeremy (CC-BY 3.0); easel by reyshapes, slippers by Isa Lousberg (CC0) — `dist/assets/models/CREDITS.txt`.
 - Project/travel photos: Unsplash — `dist/assets/photos/CREDITS.txt`. Show stills from Katrina's previous site.
-- Fonts from freefonts.io: Chewy Pro and Little Marker (free for personal use), Rubik (OFL).
+- Fonts: Katrina Hand (built from Katrina's own handwriting, `dist/assets/fonts/KatrinaHand.otf`), Little Marker and Chewy Pro from freefonts.io as fallbacks for numbers/symbols, Rubik (OFL) for paragraphs.
 - Three.js 0.180 vendored (MIT).

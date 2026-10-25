@@ -9,7 +9,7 @@ import { SECTIONS, HOME, LAMP, sectionById, sectionForObject } from './sections.
 import { furnish } from './furnish.js';
 import { createCat } from './cat.js';
 import { addEducationWall } from './education.js';
-import { SHOWS } from './content.js';
+import { SHOWS, ALBUMS } from './content.js';
 import { applyArtStyle, createInkPass } from './art-style.js';
 
 // The room is the site map. This module owns the scene and camera; ui.js owns
@@ -123,14 +123,26 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
   }
   SHOWS.forEach(s => texture(`assets/shows/${s.image}.webp`));   // warm the cache: no black flashes
   showOnTv(0);
+  // The record player spins one of Katrina's favourite albums.
+  const vinyl = { index: 0, next: 0, pinned: null };
+  function playAlbum(i) {
+    vinyl.index = (i + ALBUMS.length) % ALBUMS.length;
+    furniture.record.label.map = texture(`assets/albums/${ALBUMS[vinyl.index].image}.webp`); furniture.record.label.needsUpdate = true;
+  }
+  playAlbum(0);
   // The desk monitor plays the current project's demo (or shows its still).
-  const video = Object.assign(document.createElement('video'), { muted: true, loop: true, playsInline: true, crossOrigin: 'anonymous', preload: 'auto' });
-  const videoTex = new THREE.VideoTexture(video); videoTex.colorSpace = THREE.SRGBColorSpace;
+  let video = null, videoTex = null;
+  function useVideo(el) {
+    if (el === video) return;
+    videoTex?.dispose(); video = el;
+    videoTex = new THREE.VideoTexture(el); videoTex.colorSpace = THREE.SRGBColorSpace;
+  }
 
   // Soft light through the window: a glowing prism from the window opening
   // along the sun's direction, fading as it reaches into the room.
   const shafts = makeShafts();
-  scene.add(shafts);
+  // The window-light beams washed over the screens, so they stay out of the scene.
+  shafts.visible = false;
   let lampAuto = true, light = null;
 
   let lampOn = true;
@@ -182,7 +194,7 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
     const radius = Math.max(sphere.radius, s.minRadius || 0);
     const phone = width < 760, vFov = THREE.MathUtils.degToRad(camera.fov);
     // Usable viewport: ~58% of the width beside the panel, or ~44% of the height above it.
-    const usableW = phone ? 1 : .5, usableH = phone ? .44 : 1;
+    const usableW = phone ? .9 : .46, usableH = phone ? .36 : .78;
     const hFov = 2 * Math.atan(Math.tan(vFov / 2) * camera.aspect * usableW);
     const fov = Math.min(hFov, 2 * Math.atan(Math.tan(vFov / 2) * usableH));
     const distance = radius * (s.fit || 1.15) / Math.sin(fov / 2);
@@ -200,15 +212,19 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
     // Leave room for the page: name on the left at home, content on the
     // right (desktop) or bottom (phone) inside a section.
     const phone = width < 760;
-    if (mode === 'home') { shift.tx = phone ? 0 : -.235; shift.ty = phone ? -.16 : 0; }
-    else { shift.tx = phone ? 0 : .26; shift.ty = phone ? .28 : 0; }
+    if (mode === 'home') { shift.tx = phone ? 0 : -.235; shift.ty = phone ? -.2 : 0; }
+    else {
+      // Centre the object in the space left of the panel (panel = min(500px, 38vw) + gutter).
+      const free = width - Math.min(500, width * .38) - Math.min(72, Math.max(16, width * .045));
+      shift.tx = phone ? 0 : .5 - free / 2 / width; shift.ty = phone ? .22 : -.05;
+    }
   }
   function resize() {
     width = host.clientWidth; height = host.clientHeight; if (!width || !height) return;
     renderer.setSize(width, height, false); composer.setSize(width, height);
     camera.aspect = width / height;
     const aspect = width / height;
-    homeDistance = aspect < .62 ? 31 : aspect < .8 ? 24 : aspect < 1.1 ? 19.5 : 17.5;
+    homeDistance = aspect < .62 ? 25 : aspect < .8 ? 22 : aspect < 1.1 ? 19.5 : 17.5;
     controls.minDistance = homeDistance * .8; controls.maxDistance = homeDistance * 1.2;
     framing();
     if (!flight) {
@@ -300,6 +316,8 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
     if (pendingMove && !press?.dragged && !flight) { setHover(pick(pendingMove.clientX, pendingMove.clientY)); pendingMove = null; }
     cat.update(dt);
     if (tv.pinned === null && now > tv.next) { if (tv.next) showOnTv(tv.index + 1); tv.next = now + 3800; }
+    if (!reduced) furniture.record.disk.rotation.y -= dt * 3.5;    // 33⅓ rpm
+    if (vinyl.pinned === null && now > vinyl.next) { if (vinyl.next) playAlbum(vinyl.index + 1); vinyl.next = now + 6000; }
     stepGlow(now);
 
     const gp = Math.min(1, (now - ground.at) / 700);
@@ -331,6 +349,8 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
         anchor.project(camera);
         points[s.id] = { x: (anchor.x * .5 + .5) * width, y: (-anchor.y * .5 + .5) * height, visible: anchor.z < 1 };
       }
+      furniture.record.disk.getWorldPosition(anchor); anchor.project(camera);
+      points.vinyl = { x: (anchor.x * .5 + .5) * width, y: (-anchor.y * .5 + .5) * height, visible: anchor.z < 1 };
       // Left/right edges of the monitor, for the arrows that float beside it.
       const scr = furniture.monitor, w = scr.geometry.parameters.width / 2;
       for (const [id, x] of [['monitorL', -w], ['monitorR', w]]) {
@@ -349,12 +369,11 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
       mode = 'section'; activeSection = section; framing();
       setGround(section.ground);
       fly(sectionPose(section), activeSection === section && flight ? 1100 : 1500);
-      if (id === 'projects') video.play().catch(() => {}); else video.pause();
+
     },
     home() {
       mode = 'home'; activeSection = null; framing(); userMoved = false;
       setGround(homeGround.getStyle());
-      video.pause();
       fly(homePose(), 1300);
     },
     showProject(project) { setScreen(project); },
@@ -362,6 +381,7 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
     toggleLamp() { lampOn = !lampOn; lampAuto = false; try { localStorage.setItem('katrina-room:lamp-on', String(lampOn)); } catch { /* fine */ } applyLamp(); return lampOn; },
     get lampOn() { return lampOn; },
     pet() { return cat.interact(); },
+    playAlbum(i) { vinyl.pinned = i; if (i !== null) playAlbum(i); else vinyl.next = 0; },
     showShow(i) { tv.pinned = i; if (i !== null) showOnTv(i); else tv.next = 0; },
     highlightSection(id) { const s = sectionById(id); forced = s ? s.objects[0] : null; refreshGlow(); },
     onAnchors(cb) { anchorsCb = cb; },
@@ -372,14 +392,9 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
   function setGround(color) { ground.from.copy(scene.background); ground.to.set(color); ground.at = performance.now(); }
   function setScreen(project) {
     const media = project.media;
-    if (media.video) {
-      if (!video.src.endsWith(media.video)) { video.src = media.video; video.poster = media.poster || ''; }
-      if (mode === 'section' && activeSection?.id === 'projects') video.play().catch(() => {});
-      showOn(furniture.monitor, videoTex);
-    } else {
-      video.pause();
-      showOn(furniture.monitor, texture(media.image));
-    }
+    // With a playing video element (the one on the card), mirror it; otherwise its still.
+    if (project.videoEl) { useVideo(project.videoEl); showOn(furniture.monitor, videoTex); }
+    else showOn(furniture.monitor, texture(media.poster || media.image));
   }
 }
 

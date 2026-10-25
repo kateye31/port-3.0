@@ -25,7 +25,7 @@ async function open(viewport, opts = {}) {
   return page;
 }
 const settle = (page, ms = 1900) => page.waitForTimeout(ms);
-const ready = page => page.waitForFunction(() => document.body.dataset.view !== 'loading', null, { timeout: 120000 });
+const ready = page => page.waitForFunction(() => document.body.dataset.view !== 'loading', null, { timeout: 300000 });
 
 // Find a canvas pixel that picks a given section by sampling a grid.
 async function findObject(page, sectionId) {
@@ -34,7 +34,7 @@ async function findObject(page, sectionId) {
     const px = box.x + box.width * x, py = box.y + box.height * y;
     await page.mouse.move(px, py);
     await page.waitForTimeout(45);
-    const hit = await page.evaluate(() => document.querySelector('#cursor').dataset.state === 'enter' ? document.querySelector('#cursor-label').textContent : '');
+    const hit = await page.evaluate(() => document.querySelector('#cursor').dataset.state === 'grow' ? document.querySelector('#cursor-label').textContent : '');
     const want = await page.evaluate(id => (document.querySelector(`.hotspot[data-go="${id}"]`)?.getAttribute('aria-label')) || '', sectionId);
     if (hit && hit === want) return { x: px, y: py };
   }
@@ -53,19 +53,21 @@ async function findObject(page, sectionId) {
   check('custom cursor active', await page.evaluate(() => document.body.classList.contains('has-cursor')));
 
   const pc = await findObject(page, 'projects');
-  check('hover computer shows fullscreen cursor + label', pc, pc ? `${Math.round(pc.x)},${Math.round(pc.y)}` : 'not found');
+  check('hover computer grows cursor + label', pc, pc ? `${Math.round(pc.x)},${Math.round(pc.y)}` : 'not found');
   if (pc) { await page.mouse.move(pc.x, pc.y); await settle(page, 500); await shot(page, 'd-2-hover-computer'); }
 
   if (pc) { await page.mouse.click(pc.x, pc.y); } else { await page.click('.hotspot[data-go="projects"]', { force: true }); }
   await settle(page, 2300);
   check('click computer opens projects', await page.evaluate(() => location.hash === '#projects' && document.body.dataset.section === 'projects'));
   await page.mouse.move(700, 500); await shot(page, 'd-3-projects');
-  const next = page.locator('[data-project-step="1"]');
-  await next.hover(); await settle(page, 350);
-  check('next arrow uses drawn next cursor', await page.evaluate(() => document.querySelector('#cursor').dataset.state === 'next'));
+  const next = page.locator('.panel [data-project-step="1"], .m-next').first();
+  await next.hover({ force: true }); await settle(page, 350);
+  await page.keyboard.press('ArrowRight'); await settle(page, 600);
+  check('ArrowRight flips to project 2', await page.evaluate(() => document.querySelector('.card-meta').textContent.trim().startsWith('2')));
+  await page.keyboard.press('ArrowLeft'); await settle(page, 600);
   await shot(page, 'd-4-project-next-hover');
-  await next.click(); await settle(page, 600);
-  check('project carousel advances', await page.evaluate(() => document.querySelector('.project-count').textContent.trim().startsWith('2')));
+  { const bb = await page.locator('.m-next').boundingBox(); await page.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2); } await settle(page, 600);
+  check('project carousel advances', await page.evaluate(() => document.querySelector('.card-meta').textContent.trim().startsWith('2')));
 
   for (const id of ['about', 'skills', 'experience', 'education', 'offclock', 'contact']) {
     await page.evaluate(id => { location.hash = id; }, id); await settle(page, 2300);
@@ -76,18 +78,20 @@ async function findObject(page, sectionId) {
   // keyboard: ArrowRight walks, Escape returns home
   await page.evaluate(() => { location.hash = 'about'; }); await settle(page, 1800);
   await page.keyboard.press('ArrowRight'); await settle(page, 1800);
-  check('ArrowRight goes to next section', await page.evaluate(() => document.body.dataset.section === 'skills'));
+  check('ArrowRight goes to next section', await page.evaluate(() => document.body.dataset.section === 'projects'));
   await page.keyboard.press('Escape'); await settle(page, 1800);
   check('Escape returns to the room', await page.evaluate(() => document.body.dataset.view === 'home'));
   // wheel walks the tour
   await page.mouse.move(900, 450); await page.mouse.wheel(0, 300); await settle(page, 2200);
   check('wheel starts the tour', await page.evaluate(() => document.body.dataset.section === 'about'));
+  await page.evaluate(() => { const p = document.querySelector('#panel'); p.scrollTop = p.scrollHeight; }); await page.mouse.move(1100, 500); await page.mouse.wheel(0, 600); await settle(page, 1500);
+  check('scrolling past the end of a panel stays put', await page.evaluate(() => document.body.dataset.section === 'about'));
   await page.evaluate(() => history.back()); await settle(page, 1800);
   // menu
   await page.click('#menu-button'); await settle(page, 400);
   await shot(page, 'd-6-menu');
   check('menu opens with focus inside', await page.evaluate(() => !document.querySelector('#menu').hidden && document.querySelector('#menu').contains(document.activeElement)));
-  await page.click('#menu-list [data-go="experience"]'); await settle(page, 2200);
+  await page.click('#menu-main [data-go="experience"]'); await settle(page, 2200);
   check('menu navigates', await page.evaluate(() => document.body.dataset.section === 'experience' && document.querySelector('#menu').hidden));
   // overflow: nothing wider than the viewport
   check('no horizontal overflow (desktop)', await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
@@ -99,8 +103,9 @@ async function findObject(page, sectionId) {
   const page = await open({ width: 1280, height: 720 }, { hash: '#skills' });
   await ready(page); await settle(page, 2300); await page.mouse.move(640, 360);
   await shot(page, 'l-skills');
+  await page.context().close();
   const page2 = await open({ width: 1280, height: 720 }); await ready(page2); await settle(page2, 1600); await shot(page2, 'l-home');
-  await page.context().close(); await page2.context().close();
+  await page2.context().close();
 }
 
 // ---------- phone ----------

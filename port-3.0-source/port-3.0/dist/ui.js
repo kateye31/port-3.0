@@ -1,5 +1,5 @@
 import { SECTIONS, HOME, sectionById } from './sections.js';
-import { LINKS, ABOUT, SKILLS, PROJECTS, EXPERIENCE, MOMENTS, EDUCATION, AWARDS, COURSEWORK, ORGS, OFF_CLOCK, SHOWS, BADGES, BOOKS } from './content.js';
+import { LINKS, ABOUT, SKILLS, PROJECTS, EXPERIENCE, MOMENTS, EDUCATION, AWARDS, COURSEWORK, ORGS, OFF_CLOCK, SHOWS, BADGES, BOOKS, ALBUMS } from './content.js';
 import { orlandoNow, lightAt } from './clock.js';
 
 const $ = s => document.querySelector(s);
@@ -13,13 +13,31 @@ let room = null, current = null, projectIndex = 0, lastFocus = null;
 const photo = (name, alt, cls = '') => `<img class="${cls}" src="assets/photos/${name}" alt="${esc(alt)}" loading="lazy" decoding="async">`;
 const tags = list => `<ul class="tags">${list.map(t => `<li>${esc(t)}</li>`).join('')}</ul>`;
 
+// Soft paper tints from Katrina's palette (dark ink stays readable on all).
+const PAPERS = [
+  ['#FFF1C9', '#F05F5F', '#6FA8FF'],   // butter
+  ['#FFE0F2', '#826AED', '#3BF4FB'],   // pink
+  ['#DDF7FF', '#F32B6E', '#CAFF8A'],   // sky
+  ['#EFE6FF', '#FFB7FF', '#F05F5F'],   // lilac
+  ['#E9FFD4', '#C879FF', '#FFB38A'],   // lime
+  ['#FFE6D6', '#3BF4FB', '#826AED'],   // peach
+  ['#DFFBF5', '#F05F5F', '#FFD166'],   // mint
+  ['#F7F4EF', '#6FA8FF', '#F32B6E'],   // paper
+];
 const render = {
   about: () => `
-    <figure class="polaroid tilt-r">${photo('profile.jpg', 'Katrina’s profile picture: a tabby cat looking up')}<figcaption>my profile picture</figcaption></figure>
+    <figure class="polaroid tilt-r wide-shot">${photo('me-pink-wall.webp', 'Katrina smiling up at the sun in front of a pink wall')}</figure>
     <p class="lede">${esc(ABOUT.lede)}</p>
     ${ABOUT.body.map(p => `<p>${esc(p)}</p>`).join('')}
     <h3 class="hand">things I love</h3>${tags(ABOUT.likes)}
-    <figure class="polaroid tilt-l wide">${photo('monkey.jpg', 'Katrina holding a capuchin monkey in front of a pink building')}<figcaption>me &amp; a new friend</figcaption></figure>
+    <figure class="polaroid tilt-l wide-shot won">${photo('kh-jetson.webp', 'Katrina and her Fireline teammates on stage at Knight Hacks IX holding their prizes')}<span class="won-trophies" aria-hidden="true"><img src="assets/drawn/trophy.png" alt=""><img src="assets/drawn/trophy.png" alt=""></span><figcaption>Knight Hacks IX</figcaption></figure>
+    <div class="photo-pair about-pair">
+    <figure class="polaroid tilt-l">${photo('monkey.jpg', 'Katrina holding a capuchin monkey in front of a pink building')}<figcaption>me &amp; a new friend</figcaption></figure>
+    <figure class="polaroid tilt-r">${photo('concert.webp', 'A crowd making a heart with their hands at a beabadoobee concert')}<figcaption>beabadoobee concert</figcaption></figure>
+    </div>
+    <h3 class="hand">travel blog</h3>
+    <figure class="polaroid tilt-r wide-shot">${photo(OFF_CLOCK.places[0].image + '.webp', OFF_CLOCK.places[0].name)}<figcaption>${esc(OFF_CLOCK.places[0].name)}</figcaption></figure>
+    <button class="see-more" data-see="offclock:travel" data-cursor="next">see more of my travels <img src="assets/drawn/scribble-b.webp" alt="" width="986" height="506"></button>
     <p class="aside">This whole room started as a sketch on graph paper.</p>`,
   skills: () => `
     <div class="badges" aria-hidden="true">${BADGES.map(b => `<img src="assets/badges/${b.file}.svg" alt="" height="28" loading="lazy">`).join('')}</div>
@@ -29,20 +47,26 @@ const render = {
     <p class="aside">The same blocks are in the skills book on the coffee table.</p>`,
   projects: () => {
     const p = PROJECTS[projectIndex];
+    // Each project gets its own sheet of paper; the two behind it rotate too.
+    const [paper, back1, back2] = PAPERS[projectIndex % PAPERS.length];
     return `
-    <div class="papers">
+    <div class="papers" style="--paper-card:${paper};--paper-b1:${back1};--paper-b2:${back2}">
       <div class="paper-back b1"></div><div class="paper-back b2"></div>
       <article class="paper-card" data-project="${p.id}">
         <svg class="clip" viewBox="0 0 30 74" aria-hidden="true"><path d="M21 22v34a8 8 0 0 1-16 0V12a6 6 0 0 1 12 0v40a3 3 0 0 1-6 0V22"/></svg>
-        <p class="card-meta"><span class="tabular">${projectIndex + 1} / ${PROJECTS.length}</span>${p.featured ? '<span class="featured">featured</span>' : ''}</p>
+        ${p.featured ? '<img class="card-star" src="assets/drawn/star.png" alt="Featured project" width="360" height="380">' : ''}
+        ${p.media.video ? `<div class="card-video"><video src="${p.media.video}" poster="${p.media.poster}" muted loop playsinline autoplay preload="auto" aria-label="${esc(p.title)} demo"></video></div>` : ''}
+        <p class="card-meta"><span class="tabular">${projectIndex + 1} / ${PROJECTS.length}</span></p>
         <h3 class="card-title">${esc(p.title)}${p.subtitle ? `<small>${esc(p.subtitle)}</small>` : ''}</h3>
         ${p.when ? `<p class="hand when">${esc(p.when)}</p>` : ''}
+        ${p.wins ? `<p class="card-wins" aria-label="${p.wins} wins">${'<img src="assets/drawn/trophy.png" alt="" width="290" height="325">'.repeat(p.wins)}<span class="hand">${p.wins} wins!</span></p>` : ''}
         <ul class="chips">${p.tags.map(t => `<li>${esc(t)}</li>`).join('')}</ul>
         <p class="card-text">${esc(p.text)}</p>
         ${p.note ? `<p class="hand card-note">${esc(p.note)}</p>` : ''}
         ${p.links ? `<p class="card-links">${p.links.map(([label, href]) => `<a href="${href}" target="_blank" rel="noopener">${esc(label)} <span aria-hidden="true">↗</span></a>`).join('')}</p>` : ''}
       </article>
     </div>
+    ${p.photos ? `<div class="project-photos">${p.photos.map((ph, i) => `<figure class="polaroid ${i % 2 ? 'tilt-r' : 'tilt-l'}">${photo(ph.image, ph.alt)}<figcaption>${esc(ph.caption)}</figcaption></figure>`).join('')}</div>` : ''}
     <ol class="project-dots" aria-label="All projects">${PROJECTS.map((x, i) => `<li><button data-project-jump="${i}" aria-current="${i === projectIndex}" aria-label="${esc(x.title)}"><span>${esc(x.title)}</span></button></li>`).join('')}</ol>
     <p class="aside">${p.media.video ? 'The demo is playing on the computer.' : p.media.image.includes('photos/') ? 'Photo: Unsplash, until a demo is ready.' : 'On the computer: a screenshot of the project.'}</p>`;
   },
@@ -59,17 +83,21 @@ const render = {
     ${EDUCATION.map(e => `<div class="school"><p class="hand when">${esc(e.when)}</p><h3>${esc(e.degree)}</h3><p class="org">${esc(e.school)}</p><p>${esc(e.detail)}</p></div>`).join('')}
     <h3 class="hand">awards &amp; scholarships</h3>${tags(AWARDS)}
     <h3 class="hand">coursework I liked</h3>${tags(COURSEWORK)}
-    <h3 class="hand">where you’ll find me</h3>${tags(ORGS)}`,
+    <h3 class="hand">where you’ll find me</h3>
+    <ul class="orgs">${ORGS.map(o => `<li><span class="org-logo" style="--bg:${o.bg}"><img src="assets/orgs/${o.logo}.webp" alt="" loading="lazy"></span><b>${esc(o.name)}</b></li>`).join('')}</ul>`,
   offclock: () => `
     <p class="lede">${esc(OFF_CLOCK.text)}</p>
     <h3 class="hand">on the tv right now</h3>
     <ul class="shows">${SHOWS.map((s, i) => `<li><button data-show="${i}" aria-pressed="false">${esc(s.title)}</button></li>`).join('')}</ul>
     <p class="aside">Pick one and it plays on the TV.</p>
+    <h3 class="hand">on the record player</h3>
+    <ul class="albums">${ALBUMS.map((a, i) => `<li><button data-album="${i}" aria-pressed="false" title="${esc(a.title)} · ${esc(a.artist)}"><img src="assets/albums/${a.image}.webp" alt="" loading="lazy"><span><b>${esc(a.title)}</b>${esc(a.artist)}</span></button></li>`).join('')}</ul>
     <h3 class="hand">front row seats</h3>
+    <ul class="playbills">${OFF_CLOCK.playbills.map(p => `<li><span class="pb-head"><b>PLAYBILL</b><small>${esc(p.theatre)}</small></span><img src="assets/musicals/${p.image}.webp" alt="${esc(p.show)} poster art" loading="lazy"></li>`).join('')}</ul>
     <p>${esc(OFF_CLOCK.stage)}</p>
-    <h3 class="hand">passport stamps</h3>
+    <h3 class="hand" id="travel">travel blog</h3>
     <div class="trips">${OFF_CLOCK.places.map((p, i) => `<figure class="polaroid ${i % 2 ? 'tilt-r' : 'tilt-l'}">${photo(p.image + '.webp', p.name)}<figcaption>${esc(p.name)}</figcaption></figure>`).join('')}</div>
-    <p class="aside">${esc(OFF_CLOCK.more)} Photos: Unsplash.</p>`,
+`,
   contact: () => `
     <p class="lede">I’d love to hear about your team, your hackathon or your cat.</p>
     <a class="big-link" href="mailto:${LINKS.email}">${LINKS.email}</a>
@@ -101,13 +129,16 @@ function go(id, { push = true } = {}) {
   document.documentElement.style.setProperty('--arrow-filter', light(section.ground) ? INK_FILTER : 'drop-shadow(0 2px 3px rgb(30 22 49 / .25))');
   $('#sheet-heading').textContent = section.title;
   $('#sheet-note').textContent = section.note;
-  $('#panel-inner').innerHTML = render[id]();
+  const after = SECTIONS[(order.indexOf(id) + 1) % order.length];
+  $('#panel-inner').innerHTML = render[id]() + `<button class="next-up" data-go="${after.id}" data-cursor="next"><span class="hand">next up</span>${esc(after.title)} <img src="assets/drawn/scribble-b.webp" alt="" width="986" height="506"></button>`;
   $('#panel').scrollTop = 0;
+  setPeek?.(false);
   const i = order.indexOf(id), prev = SECTIONS[(i - 1 + order.length) % order.length], next = SECTIONS[(i + 1) % order.length];
   $('#step-prev span').textContent = prev.title; $('#step-prev').dataset.go = prev.id; $('#step-prev').setAttribute('aria-label', `Previous: ${prev.title}`);
   $('#step-next span').textContent = next.title; $('#step-next').dataset.go = next.id; $('#step-next').setAttribute('aria-label', `Next: ${next.title}`);
   replay($('#scene'), first ? 'enter' : 'swap');
   if (room) room.goTo(id);
+  if (id === 'projects') syncScreen();
   if (id !== 'offclock') room?.showShow(null);
   if (push) history.pushState({ id }, '', `#${id}`);
   document.title = `${section.title} · Katrina Adewale`;
@@ -134,6 +165,23 @@ const step = dir => { const i = order.indexOf(current); go(current ? order[(i + 
 addEventListener('popstate', () => { const id = location.hash.slice(1); go(id || 'home', { push: false }); });
 
 document.addEventListener('click', e => {
+  const album = e.target.closest('[data-album]');
+  if (album) {
+    const on = album.getAttribute('aria-pressed') !== 'true';
+    document.querySelectorAll('[data-album]').forEach(b => b.setAttribute('aria-pressed', String(on && b === album)));
+    room?.playAlbum(on ? Number(album.dataset.album) : null);
+    return;
+  }
+  const see = e.target.closest('[data-see]');
+  if (see) {
+    const [id, anchor] = see.dataset.see.split(':');
+    go(id);
+    requestAnimationFrame(() => setTimeout(() => {
+      const panel = $('#panel'), el = document.getElementById(anchor);
+      if (el) panel.scrollTo({ top: el.offsetTop - 18, behavior: reduced ? 'auto' : 'smooth' });
+    }, reduced ? 0 : 700));
+    return;
+  }
   const show = e.target.closest('[data-show]');
   if (show) {
     const i = Number(show.dataset.show), on = show.getAttribute('aria-pressed') !== 'true';
@@ -150,7 +198,7 @@ document.addEventListener('click', e => {
   $('#panel-inner').innerHTML = render.projects();
   panel.scrollTop = t.dataset.projectJump ? 0 : y;
   replay($('.papers'), t.dataset.projectStep === '-1' ? 'from-left' : 'from-right');
-  room?.showProject(PROJECTS[projectIndex]);
+  syncScreen();
   $('#announce').textContent = PROJECTS[projectIndex].title;
   if (t.dataset.projectStep && t.closest('.panel')) $(`.panel [data-project-step="${t.dataset.projectStep}"]`)?.focus();
 });
@@ -159,36 +207,39 @@ addEventListener('keydown', e => {
   if (!$('#menu').hidden) { if (e.key === 'Escape') closeMenu(); return; }
   if (e.target.closest('input, textarea')) return;
   if (e.key === 'Escape' && current) goHome();
-  if (current && e.key === 'ArrowRight' && !e.target.closest('canvas')) step(1);
-  if (current && e.key === 'ArrowLeft' && !e.target.closest('canvas')) step(-1);
+  const dir = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+  if (!current || !dir || e.target.closest('canvas')) return;
+  // In Projects the arrow keys flip through projects; elsewhere they walk the room.
+  if (current === 'projects') $(`.m-arrow[data-project-step="${dir}"]`).click(); else step(dir);
 });
 
-// Wheel walks the tour like a slow scroll, without hijacking the panel's own scrolling.
-let wheelAcc = 0, wheelLock = 0;
+// Scrolling only ever reads. On the home page a scroll down starts the tour;
+// inside a section the wheel scrolls the panel, wherever the pointer is, and
+// moving on is always a choice (arrows, arrow keys, the link at the end).
+let wheelAcc = 0;
 addEventListener('wheel', e => {
   if (body.dataset.view === 'loading' || !$('#menu').hidden) return;
-  const panel = e.target.closest('.panel');
-  if (panel && panel.scrollHeight > panel.clientHeight + 2) {
-    const atTop = panel.scrollTop <= 0, atEnd = panel.scrollTop + panel.clientHeight >= panel.scrollHeight - 2;
-    if (!(e.deltaY < 0 && atTop) && !(e.deltaY > 0 && atEnd)) return;
+  if (current) {
+    if (!e.target.closest('.panel')) $('#panel').scrollBy({ top: e.deltaY, behavior: 'auto' });
+    return;
   }
-  const now = performance.now(); if (now < wheelLock) return;
-  wheelAcc += e.deltaY;
-  if (Math.abs(wheelAcc) > 120) {
-    const dir = Math.sign(wheelAcc); wheelAcc = 0; wheelLock = now + 1300;
-    if (!current) { if (dir > 0) go(order[0]); }
-    else if (dir < 0 && current === order[0]) goHome();
-    else if (!(dir > 0 && current === order[order.length - 1])) step(dir);
-  }
+  wheelAcc = Math.max(0, wheelAcc + e.deltaY);
+  if (wheelAcc > 160) { wheelAcc = 0; go(order[0]); }
 }, { passive: true });
 
 // ---------------- menu ----------------
 function buildMenu() {
-  $('#menu-list').innerHTML = `<li><button data-go="home"><i style="--c:${HOME.ground}"></i>The room</button></li>` +
-    SECTIONS.map(s => `<li><button data-go="${s.id}"><i style="--c:${s.ground}"></i>${esc(s.title)}<small>${esc(s.note)}</small></button></li>`).join('');
+  // Three big doors first; the rest of the room sits in a quieter list below.
+  const MAIN = ['projects', 'experience', 'about'];
+  const item = s => `<li><button data-go="${s.id}" style="--c:${s.ground}"><i></i>${esc(s.title)}</button></li>`;
+  $('#menu-main').innerHTML = MAIN.map(id => item(sectionById(id))).join('');
+  $('#menu-list').innerHTML = SECTIONS.filter(s => !MAIN.includes(s.id) && s.id !== 'contact').map(item).join('');
 }
-function syncNav() { $('#nav-work').setAttribute('aria-current', current === 'projects' ? 'page' : 'false'); }
-function syncMenu() { syncNav(); document.querySelectorAll('#menu-list button').forEach(b => b.setAttribute('aria-current', String(b.dataset.go === (current || 'home')))); }
+function syncNav() {
+  $('#nav-work').setAttribute('aria-current', current === 'projects' ? 'page' : 'false');
+  $('#nav-exp').setAttribute('aria-current', current === 'experience' ? 'page' : 'false');
+}
+function syncMenu() { syncNav(); document.querySelectorAll('#menu-main button, #menu-list button, .menu-home').forEach(b => b.setAttribute('aria-current', String(b.dataset.go === (current || 'home')))); }
 function openMenu() {
   lastFocus = document.activeElement;
   const m = $('#menu'); m.hidden = false; replay(m, 'enter');
@@ -218,10 +269,16 @@ $('#lamp-button').addEventListener('click', e => {
 function buildHotspots() {
   $('#hotspots').innerHTML = SECTIONS.map(s => `<button class="hotspot" data-go="${s.id}" style="--tint:${s.outline}" aria-label="${esc(s.title)}"><img src="assets/drawn/cursor-dot.webp" alt=""><span>${esc(s.title)}</span></button>`).join('');
 }
+let vinylAt = null;
 function placeHotspots(points) {
+  vinylAt = points.vinyl;
   for (const [id, el] of [['monitorL', $('.m-prev')], ['monitorR', $('.m-next')]]) {
     const p = points[id];
-    el.style.transform = `translate3d(${p.x + (id === 'monitorL' ? -64 : 64)}px, ${p.y}px, 0)`;
+    let x = p.x + (id === 'monitorL' ? -64 : 64);
+    // Never tuck the right arrow under the panel.
+    const edge = innerWidth >= 760 ? $('#panel').getBoundingClientRect().left - 48 : innerWidth - 40;
+    if (id === 'monitorR') x = Math.min(x, edge);
+    el.style.transform = `translate3d(${x}px, ${p.y}px, 0)`;
   }
   for (const b of $('#hotspots').children) {
     const p = points[b.dataset.go];
@@ -253,12 +310,13 @@ function setupCursor() {
     const hit = target.closest?.('[data-cursor], a, button, .hotspot');
     let state = 'dot';
     if (hit?.dataset.cursor) state = hit.dataset.cursor;
-    else if (hit?.classList.contains('hotspot')) state = sectionById(hit.dataset.go)?.enter ? 'enter' : 'grow';
+    else if (hit?.classList.contains('hotspot')) state = 'grow';
     else if (hit) state = 'link';
-    else if (target.id === 'room-canvas' && roomState) state = roomState.enter ? 'enter' : 'grow';
+    else if (target.id === 'room-canvas' && roomState) state = 'grow';
     el.dataset.state = state;
-    const over = target.id === 'room-canvas' ? roomState?.label : hit?.classList.contains('hotspot') ? hit.getAttribute('aria-label') : '';
-    const text = state === 'enter' || state === 'grow' ? over || '' : '';
+    // The hotspot shows its own coloured label, so the cursor only labels the 3D room.
+    const over = target.id === 'room-canvas' ? roomState?.label : '';
+    const text = state === 'grow' ? over || '' : '';
     label.textContent = text; label.style.setProperty('--tint', roomState?.tint || 'var(--tint)');
     el.classList.toggle('labelled', Boolean(text));
   }
@@ -271,19 +329,17 @@ function setupCursor() {
   requestAnimationFrame(frame);
   return {
     room(detail) {
-      roomState = detail.key ? { label: detail.section ? detail.section.title : 'the lamp', enter: Boolean(detail.section?.enter), tint: detail.section?.outline || '#FFE7A3' } : null;
+      roomState = detail.key ? { label: detail.section ? detail.section.title : 'the lamp', tint: detail.section?.outline || '#FFE7A3' } : null;
       update(document.elementFromPoint(aim.x, aim.y) || body);
     },
   };
 }
 
-// ---------------- Katrina's time + page views ----------------
+// ---------------- Katrina's local time ----------------
 let homeLight = { ground: HOME.ground, ink: HOME.ink };
 function tickClock() {
-  const { hour, label } = orlandoNow(), l = lightAt(hour);
+  const l = lightAt(orlandoNow().hour);
   homeLight = l;
-  $('#clock-time').textContent = label;
-  $('#clock-phase').textContent = l.phase;
   document.documentElement.style.setProperty('--home-ground', l.ground);
   document.documentElement.style.setProperty('--home-ink', l.ink);
   body.classList.toggle('is-night', l.night);
@@ -296,21 +352,45 @@ function tickClock() {
 }
 tickClock(); setInterval(tickClock, 30000);
 
-// One hit per browser session.
-(async () => {
-  // Local previews count against a separate key so they never touch the real number.
-  const live = !/^(localhost|127\.|\[::1\])/.test(location.hostname);
-  const key = `https://abacus.jasoncameron.dev/%s/katrinaadewale-dev/${live ? 'views' : 'preview-views'}`;
-  let verb = 'get';
-  try { if (!sessionStorage.getItem('counted')) { verb = 'hit'; sessionStorage.setItem('counted', '1'); } } catch { verb = 'hit'; }
-  try {
-    const r = await fetch(key.replace('%s', verb)); if (!r.ok) throw 0;
-    const { value } = await r.json();
-    $('#views').textContent = Number(value).toLocaleString('en-US');
-    $('#views-word').textContent = Number(value) === 1 ? 'visit' : 'visits';
-    $('#views-wrap').hidden = false;
-  } catch { /* the counter is a nicety; hide it if it's down */ }
-})();
+// Private visit log: one silent hit per browser session, never shown on the
+// page. Katrina reads the number at abacus.jasoncameron.dev/get/katrinaadewale-dev/views.
+// Local previews count against a separate key so they never touch the real number.
+try {
+  if (!sessionStorage.getItem('counted')) {
+    sessionStorage.setItem('counted', '1');
+    const live = /(^|.)katrinaadewale.dev$/.test(location.hostname);
+    fetch(`https://abacus.jasoncameron.dev/hit/katrinaadewale-dev/${live ? 'views' : 'preview-views'}`).catch(() => {});
+  }
+} catch { /* storage blocked: skip counting */ }
+
+// ---------------- music notes from the record player ----------------
+const NOTES = ['note-treble', 'note-half', 'note-half2', 'note-eighth', 'note-eighth2', 'note-flat', 'note-bass'];
+if (!reduced) setInterval(() => {
+  if (!vinylAt?.visible || document.hidden || body.dataset.view === 'loading') return;
+  const n = document.createElement('img'), drift = (Math.random() - .5) * 120;
+  n.src = `assets/drawn/${NOTES[Math.floor(Math.random() * NOTES.length)]}.png`; n.alt = '';
+  n.style.cssText = `left:${vinylAt.x}px;top:${vinylAt.y}px;--dx:${drift}px;--rot:${(Math.random() - .5) * 40}deg;--s:${body.dataset.section === 'offclock' ? .8 : .5}`;
+  $('#notes').append(n); n.addEventListener('animationend', () => n.remove());
+}, 2600);
+
+// ---------------- project demos ----------------
+// Videos only exist while Projects is open: the card plays the demo and the
+// desk monitor mirrors that same element.
+function syncScreen() {
+  const p = PROJECTS[projectIndex], v = current === 'projects' ? $('.card-video video') : null;
+  if (v) v.play().catch(() => {});
+  room?.showProject({ ...p, videoEl: v });
+}
+
+// ---------------- phone sheet ----------------
+// Tap (or drag) the grip to lower the sheet and see the room, tap again to read.
+const grip = $('#sheet-grip');
+const setPeek = on => { body.classList.toggle('peek', on); grip.setAttribute('aria-pressed', String(on)); grip.setAttribute('aria-label', on ? 'Show the text again' : 'Show more of the room'); };
+grip.addEventListener('click', () => setPeek(!body.classList.contains('peek')));
+let dragY = null;
+grip.addEventListener('pointerdown', e => { dragY = e.clientY; });
+addEventListener('pointerup', e => { if (dragY !== null && Math.abs(e.clientY - dragY) > 30) setPeek(e.clientY > dragY); dragY = null; });
+addEventListener('touchstart', () => body.classList.add('touched'), { once: true, passive: true });
 
 // ---------------- boot ----------------
 buildMenu(); buildHotspots();
@@ -321,6 +401,7 @@ document.addEventListener('room:pick', e => {
   if (key === 'lamp') { $('#lamp-button').click(); return; }
   if (!section) return;
   if (section.id === current && key === 'cat') { room.pet(); return; }
+  if (section.id === current) return;
   go(section.id);
 });
 
@@ -338,7 +419,7 @@ function reveal() {
     room = await createRoom({ canvas: $('#room-canvas'), onProgress: setProgress });
     setProgress(1);
     room.onAnchors(placeHotspots);
-    room.showProject(PROJECTS[projectIndex]);
+    syncScreen();
     tickClock();
     // Let the sketch finish "drawing" before it hands over to the real room.
     setTimeout(reveal, reduced ? 0 : 450);

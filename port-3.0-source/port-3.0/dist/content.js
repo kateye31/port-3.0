@@ -29,10 +29,14 @@ export const SKILLS = [
 // Phantom Wall YouTube thumbnail, or a screenshot. Unsplash only where no
 // screenshot exists yet.
 export const PROJECTS = [
-  { id: 'fireline', title: 'Fireline', featured: true, when: 'Knight Hacks IX · Oct 2026',
+  { id: 'fireline', title: 'Fireline', featured: true, wins: 2, when: 'Knight Hacks IX · Oct 2026',
     media: { image: 'assets/projects/fireline.webp' }, tags: ['NVIDIA Jetson', 'YOLO + TensorRT', 'ESP32', 'FastAPI', 'React'],
     text: 'Tree-mounted camera units that spot wildfire smoke on the device, in forests with no power or internet, and send one alert packet of 340 bytes or less over a satellite link.',
-    links: [['Website', 'https://fire-line.tech/'], ['GitHub', 'https://github.com/kateye31/fireline']], note: 'Demo video coming soon.' },
+    links: [['GitHub', 'https://github.com/kateye31/fireline']], note: 'Demo video coming soon.',
+    photos: [
+      { image: 'kh-team.webp', caption: 'the team + our prototype', alt: 'Katrina and the Fireline team at Knight Hacks IX holding the tree-mounted camera prototype' },
+      { image: 'kh-oneethos.webp', caption: 'on stage with OneEthos', alt: 'The Fireline team on stage with the OneEthos judges at Knight Hacks IX' },
+    ] },
   { id: 'leetfield', title: 'LeetField', featured: true, when: 'Girls Who Code',
     media: { video: 'assets/projects/leetfield.webm', poster: 'assets/projects/leetfield.webp' }, tags: ['React', 'TypeScript', 'GSAP', 'Gemini API', 'Vite'],
     text: 'A Stardew Valley–style, gamified LeetCode platform for Girls Who Code: 2,500+ problems, 15+ reusable components and a Gemini tutor that gives debugging feedback in under 500ms. Cut user blockage time by ~40%.',
@@ -50,26 +54,17 @@ export const PROJECTS = [
   { id: 'lawgic', title: 'Lawgic', when: 'Knight Hacks VIII',
     media: { video: 'assets/projects/lawgic.webm', poster: 'assets/projects/lawgic.webp' }, tags: ['Gemini API', 'React', 'Python'],
     text: 'A full-stack AI legal assistant: file upload, a human-in-the-middle review step and email suggestions, with Gemini behind a Python backend.' },
-  { id: 'gridlock', title: 'GridLock', when: 'ShellHacks 2026',
-    media: { image: 'assets/projects/gridlock.webp' }, tags: ['React', 'GSAP', 'Python', 'Vite'],
-    text: 'Maps every planned project from two utilities’ public construction plans and ranks where they’ll be building near each other at the same time, so they can share crews and outage windows.',
-    links: [['Live demo', 'https://kateye31.github.io/shellhack/'], ['GitHub', 'https://github.com/kateye31/shellhack']] },
-  { id: 'fecafe', title: 'FE Café', when: 'Ongoing since Dec 2025',
-    media: { image: 'assets/photos/feprep.webp' }, tags: ['Next.js', 'React', 'GSAP'],
-    text: 'A cozy study café for UCF’s Foundation Exam: 18 topics, 19 interactive playgrounds, a C code studio on real gcc, and a pomodoro brew timer.',
-    links: [['GitHub', 'https://github.com/kateye31/ulta-feprep']] },
   { id: 'cloud', title: 'Cloud Media Processor', when: 'Nov 2025',
     media: { image: 'assets/photos/cloud.webp' }, tags: ['AWS Lambda', 'S3', 'Rekognition'],
     text: 'A serverless AWS pipeline that processes video uploads, generates thumbnails and detects content. My first step into the cloud.' },
-  { id: 'lexer', title: 'Lexical Scanner in C',
-    media: { image: 'assets/photos/lexer.webp' }, tags: ['C', 'Compilers', 'State machines'],
-    text: 'Built with my project partner Jhanel: a from-scratch ANSI C lexer that turns PL/0 source into tokens and reports every lexical error in one pass.' },
 ];
 
 export const EXPERIENCE = [
   { when: 'Oct 2026 – now', role: 'IIoT Solutions Engineer', org: 'Lockheed Martin',
     text: 'Digital transformation for IIoT in production manufacturing: dashboard analytics UX for business-area insights, integrated into an AWS cloud solution set.' },
-  { when: '2025 – now', role: 'Software Engineer Intern', org: 'UCF Transfer Connect',
+  { when: 'Sept 2026 – now', role: 'Engineering Ambassador', org: 'UCF Center for Initiatives in STEM (iSTEM) · Orlando, FL',
+    text: 'Representing UCF Computer Science at 5+ K-12 school visits and campus events, reaching 6,000+ students.' },
+  { when: 'Aug 2025 – now', role: 'Software Engineer Intern', org: 'UCF Transfer Connect',
     text: 'Automated Excel lookups across 40,000+ cells, cut inconsistency detection time 50%+ across 300+ files, and shipped a tool that processes 3,000+ data points in seconds.' },
   { when: 'Jan – May 2026', role: 'Data Science Research Intern', org: 'Spatial Analysis Lab',
     text: 'Python statistics and modeling on how natural disasters affect resource availability; co-authored a research paper.' },
@@ -94,7 +89,14 @@ export const EDUCATION = [
 ];
 export const AWARDS = ['Knight Research Scholar · UCF, 2026', 'T-LEARN Scholar · UCF, 2026', 'Florida Bright Futures Scholar', 'AI for Work and Life · UNF, 2025'];
 export const COURSEWORK = ['Data Structures & Algorithms I & II', 'Object-Oriented Programming', 'Robot Vision', 'Cyber Defense Analysis', 'Entrepreneurship for Defense', 'Managing IT Integration'];
-export const ORGS = ['UCF STEM Ambassador', 'Hack@UCF organizer', 'Girls Who Code', 'BSides Florida organizer', 'WEECS', 'Knight Research Scholars'];
+// Logos from katrinaadewale.dev (assets/orgs).
+export const ORGS = [
+  { name: 'UCF STEM Ambassador', logo: 'stem', bg: '#FFFFFF' },
+  { name: 'Girls Who Code', logo: 'gwc', bg: '#2FA294' },
+  { name: 'BSides Florida organizer', logo: 'bsides', bg: '#FFFFFF' },
+  { name: 'WEECS', logo: 'weecs', bg: '#F2B8CE' },
+  { name: 'Knight Research Scholars', logo: 'krs', bg: '#1E1631' },
+];
 
 // Stills from katrinaadewale.dev's "What I've been watching" shelf.
 export const SHOWS = [
@@ -116,12 +118,18 @@ export const SHOWS = [
 export const OFF_CLOCK = {
   text: 'If I’m not coding, I’m listening to music, dancing, or cooking for my friends.',
   stage: 'I’ve seen Wicked, The Lion King and Maybe Happy Ending on Broadway. Three years of theater, a Drama Award in middle school, and Mamma Mia in high school.',
-  places: [
-    { name: 'New York City', image: 'nyc' },
-    { name: 'Spain', image: 'madrid' },
-    { name: 'Hawaii', image: 'hawaii' },
+  playbills: [
+    { show: 'Wicked', theatre: 'Gershwin Theatre', image: 'wicked' },
+    { show: 'Maybe Happy Ending', theatre: 'Belasco Theatre', image: 'maybe-happy-ending' },
+    { show: 'Hadestown', theatre: 'Walter Kerr Theatre', image: 'hadestown' },
   ],
-  more: 'California and Maine too. A travel blog is on the way.',
+  places: [
+    { name: 'NYC', image: 'trip-nyc' },
+    { name: 'Madrid', image: 'trip-madrid' },
+    { name: 'Washington DC', image: 'trip-dc' },
+    { name: 'Hawaii', image: 'trip-hawaii' },
+    { name: 'San Diego, California', image: 'trip-san-diego' },
+  ],
 };
 
 // The tech-stack blocks from github.com/kateye31 (shields.io badges, saved in assets/badges).
@@ -136,3 +144,17 @@ export const BOOKS = [
   ['Wuthering Heights', 'Emily Brontë', 'wuthering-heights'], ['The Lord of the Rings', 'J.R.R. Tolkien', 'lord-of-the-rings'],
   ['The Hunger Games', 'Suzanne Collins', 'hunger-games'], ['Harry Potter and the Prisoner of Azkaban', 'J.K. Rowling', 'prisoner-of-azkaban'],
 ].map(([title, author, image]) => ({ title, author, image }));
+
+// "What's on the radio" from katrinaadewale.dev. Covers in assets/albums.
+export const ALBUMS = [
+  ['Eternal Sunshine', 'Ariana Grande', 'eternal-sunshine'], ['Hit Me Hard and Soft', 'Billie Eilish', 'hit-me-hard-and-soft'],
+  ['AM', 'Arctic Monkeys', 'am'], ['Parachutes', 'Coldplay', 'parachutes'], ['ANTI', 'Rihanna', 'anti'],
+  ['Doo-Wops & Hooligans', 'Bruno Mars', 'doo-wops-hooligans'], ['OK Computer', 'Radiohead', 'ok-computer'],
+  ['Demon Days', 'Gorillaz', 'demon-days'], ['Californication', 'Red Hot Chili Peppers', 'californication'],
+  ['The Best of Sade', 'Sade', 'the-best-of-sade'], ['Never for Ever', 'Kate Bush', 'never-for-ever'],
+  ['The Stranger', 'Billy Joel', 'the-stranger'], ['Uprising', 'Bob Marley & The Wailers', 'uprising'],
+  ['Hatful of Hollow', 'The Smiths', 'hatful-of-hollow'], ['The Eminem Show', 'Eminem', 'the-eminem-show'],
+  ['Stankonia', 'OutKast', 'stankonia'], ['In Between Dreams', 'Jack Johnson', 'in-between-dreams'],
+  ['Songs About Jane', 'Maroon 5', 'songs-about-jane'], ['Third Eye Blind', 'Third Eye Blind', 'third-eye-blind'],
+  ['The Lumineers', 'The Lumineers', 'the-lumineers'], ['All I Want Is You', 'Miguel', 'all-i-want-is-you'],
+].map(([title, artist, image]) => ({ title, artist, image }));

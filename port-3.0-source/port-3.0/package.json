@@ -11,7 +11,9 @@
     "shots": "node checks/shots.mjs"
   },
   "devDependencies": {
+    "opentype.js": "^1.3.4",
     "playwright": "^1.56.1",
+    "potrace": "^2.1.8",
     "three": "0.180.0"
   }
 }

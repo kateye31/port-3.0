@@ -25,6 +25,9 @@ export function orlandoNow(date = new Date()) {
 }
 
 export function lightAt(hour) {
+  // The room stays at sunset through the night (dark scenes hide everything)
+  // and picks back up at sunrise.
+  if (hour >= 19 || hour < 6.5) hour = 19;
   let i = 0; while (i < KEYS.length - 2 && hour >= KEYS[i + 1][0]) i++;
   const a = KEYS[i], b = KEYS[i + 1], t = (hour - a[0]) / (b[0] - a[0] || 1);
   const mix = (x, y) => x + (y - x) * t;

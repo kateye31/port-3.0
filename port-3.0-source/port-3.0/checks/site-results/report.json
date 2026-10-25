@@ -18,7 +18,7 @@
       "detail": ""
     },
     {
-      "name": "hover computer shows fullscreen cursor + label",
+      "name": "hover computer grows cursor + label",
       "ok": true,
       "detail": "806,324"
     },
@@ -28,7 +28,7 @@
       "detail": ""
     },
     {
-      "name": "next arrow uses drawn next cursor",
+      "name": "ArrowRight flips to project 2",
       "ok": true,
       "detail": ""
     },
@@ -79,6 +79,11 @@
     },
     {
       "name": "wheel starts the tour",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "scrolling past the end of a panel stays put",
       "ok": true,
       "detail": ""
     },
