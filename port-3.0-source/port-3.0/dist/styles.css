@@ -626,7 +626,6 @@ body.touched, body.touched * { cursor: auto !important; }
   .chip { min-height: 44px; padding: 6px 20px 4px; font-size: 21px; }
   .chip-work { display: inline-flex; }
   .nav-cat img { width: 48px; }
-  [data-view="section"] .mark-name { display: block; width: 124px; }
 
   .hero { top: 96px; left: var(--gutter); right: var(--gutter); }
   .hero-title { width: min(56vw, 520px); }
@@ -720,6 +719,11 @@ body.touched, body.touched * { cursor: auto !important; }
 
 /* phones + portrait tablets: the steps say where they go (label under each arrow). */
 @media (max-width: 759px) and (min-height: 501px), (max-width: 1100px) and (orientation: portrait) {
+  /* the sheet is paper here, not the purple field: ink, not the field's white */
+  [data-section="projects"] .panel .aside, [data-section="projects"] .next-up { color: var(--ink-soft); border-color: color-mix(in srgb, var(--ink) 22%, transparent); }
+  [data-section="projects"] .next-up { color: var(--ink); }
+  [data-section="projects"] .next-up .hand { color: var(--ink-soft); opacity: 1; }
+  [data-section="projects"] .next-up img { filter: brightness(0) saturate(100%) invert(9%) sepia(19%) saturate(2400%) hue-rotate(225deg); }
   .pp-title { font-size: 19px; }
   .step-prev, .step-next { flex-direction: column; gap: 2px; min-width: 64px; }
   .step-next { flex-direction: column-reverse; }

@@ -106,25 +106,61 @@ function addTote(group) {
   group.add(tote);
 }
 
-function quiltTexture() {
-  const canvas = document.createElement('canvas'); canvas.width = canvas.height = 256;
-  const ctx = canvas.getContext('2d'); ctx.fillStyle = '#B96B73'; ctx.fillRect(0, 0, 256, 256);
+// Deep red damask cover, after Katrina's swatches: a tonal medallion in dark
+// wine on a woven red ground, half-dropped with paler medallions between.
+function coverTexture() {
+  const S = 256, canvas = document.createElement('canvas'); canvas.width = canvas.height = S;
+  const ctx = canvas.getContext('2d'); ctx.fillStyle = '#8A1826'; ctx.fillRect(0, 0, S, S);
   let seed = 91; const rnd = () => (seed = seed * 16807 % 2147483647) / 2147483647;
-  ctx.lineCap = 'round';
-  for (let i = -2; i < 12; i++) {
-    ctx.strokeStyle = i % 2 ? '#EACDC1' : '#785879'; ctx.lineWidth = i % 2 ? 14 : 8; ctx.beginPath();
-    for (let y = -10; y <= 266; y += 12) { const x = i * 28 + Math.sin(y * .055 + i) * 4 + (rnd() - .5) * 2; y < 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); } ctx.stroke();
+  // the weave: offset rows of slightly brighter nubs
+  for (let y = 0; y < S; y += 6) for (let x = (y / 6) % 2 * 3; x < S; x += 6) {
+    ctx.fillStyle = `rgba(${190 + rnd() * 30 | 0},40,52,.45)`;
+    ctx.beginPath(); ctx.ellipse(x + 1.5, y + 2, 1.5, 2.2, 0, 0, Math.PI * 2); ctx.fill();
   }
-  for (let i = 0; i < 10; i++) {
-    ctx.strokeStyle = 'rgba(255,239,220,.52)'; ctx.lineWidth = 5 + i % 2 * 3; ctx.beginPath();
-    for (let x = -8; x <= 264; x += 12) { const y = i * 29 + Math.sin(x * .045 + i) * 3; x < 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); } ctx.stroke();
+  medallion(ctx, S / 2, S / 2, 92, '#4F0A15');
+  for (const [x, y] of [[0, 0], [S, 0], [0, S], [S, S]]) medallion(ctx, x, y, 80, 'rgba(176,44,58,.75)');   // corners meet, so the tile repeats seamlessly
+  const tex = new THREE.CanvasTexture(canvas); tex.colorSpace = THREE.SRGBColorSpace; tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.anisotropy = 8; return tex;
+}
+
+// One mirror-symmetric damask medallion: spire, bloom, sweeping leaves, curls.
+function medallion(ctx, cx, cy, s, fill) {
+  const leaf = (x, y, deg, len, w) => {
+    ctx.save(); ctx.translate(x * s, y * s); ctx.rotate(deg * Math.PI / 180);
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(w * s, -len * s * .5, 0, -len * s); ctx.quadraticCurveTo(-w * s, -len * s * .5, 0, 0); ctx.fill(); ctx.restore();
+  };
+  ctx.save(); ctx.translate(cx, cy); ctx.fillStyle = fill; ctx.strokeStyle = fill; ctx.lineWidth = s * .035; ctx.lineCap = 'round';
+  for (const side of [1, -1]) {
+    ctx.save(); ctx.scale(side, 1);
+    leaf(0, -.12, 0, .78, .1);                         // spire
+    leaf(.02, -.05, 28, .42, .13); leaf(.02, -.02, 62, .38, .12);   // bloom petals
+    leaf(.04, .1, 98, .62, .16); leaf(.04, .16, 128, .66, .15);     // big sweeping leaves
+    leaf(.02, .22, 158, .58, .12);                     // lower leaves
+    leaf(0, .2, 180, .62, .09);                        // stem
+    ctx.beginPath(); ctx.arc(.3 * s, -.6 * s, .12 * s, Math.PI * .2, Math.PI * 1.5); ctx.stroke();   // curls by the spire
+    ctx.beginPath(); ctx.arc(.62 * s, .02 * s, .05 * s, 0, Math.PI * 2); ctx.fill();                   // side bud
+    ctx.restore();
   }
-  const tex = new THREE.CanvasTexture(canvas); tex.colorSpace = THREE.SRGBColorSpace; tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(1.2, 2); return tex;
+  ctx.beginPath(); ctx.ellipse(0, 0, .17 * s, .2 * s, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
 }
 
 export function applyBedQuilt(bed) {
-  const tex = quiltTexture();
-  bed.traverse(o => { if (o.isMesh && o.name === 'Mesh_cover') o.material = new THREE.MeshStandardMaterial({ name: 'wobbly_quilt', map: tex, roughness: .98 }); });
+  const tex = coverTexture();
+  bed.traverse(o => {
+    if (!o.isMesh || o.name !== 'Mesh_cover') return;
+    // Kenney meshes map every face to one palette pixel, so a texture would show
+    // as a flat colour. Project fresh UVs from the surface (top from above, sides
+    // from the side) so the damask tiles across it, a medallion about a quarter of the bed wide.
+    const g = o.geometry = o.geometry.clone(), pos = g.attributes.position, nor = g.attributes.normal;
+    const k = 3.2 / 2.4, uv = new Float32Array(pos.count * 2);
+    for (let i = 0; i < pos.count; i++) {
+      const nx = Math.abs(nor.getX(i)), ny = Math.abs(nor.getY(i)), nz = Math.abs(nor.getZ(i));
+      const [u, v] = ny >= nx && ny >= nz ? [pos.getX(i), pos.getZ(i)] : nx >= nz ? [pos.getZ(i), pos.getY(i)] : [pos.getX(i), pos.getY(i)];
+      uv[i * 2] = u * k; uv[i * 2 + 1] = v * k;
+    }
+    g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+    o.material = new THREE.MeshStandardMaterial({ name: 'deep_red_cover', map: tex, roughness: .98 });
+  });
 }
 
 // Measured on the Kenney single bed as placed: the cover's top is y .982 over

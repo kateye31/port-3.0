@@ -229,7 +229,7 @@ function recordOn(player) {
   label.rotation.x = -Math.PI / 2; label.position.y = .005;
   disk.add(vinyl, groove, label); disk.position.set(c.x, box.max.y + .005, c.z);
   vinyl.castShadow = true; player.parent.add(disk);
-  return { disk, label: labelMat };
+  return { disk, label };   // the mesh: room.js reads label.material, which applyArtStyle replaces
 }
 
 // Grooves, plus a few brighter arcs where the needle has worn the track: the

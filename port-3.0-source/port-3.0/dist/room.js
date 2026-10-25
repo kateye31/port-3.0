@@ -21,6 +21,8 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // (phones, portrait tablets); short = side-by-side squeezed into a landscape phone.
 const STACKED = matchMedia('(max-width: 759px) and (min-height: 501px), (max-width: 1100px) and (orientation: portrait)');
 const SHORT = matchMedia('(max-height: 500px) and (orientation: landscape)');
+// The turntable from above, for when a record is playing (see playAlbum below).
+const RECORD_SHOT = { shot: { frame: ['record-player'], dir: [.15, 1.1, 1], fit: 1.3, minRadius: .55 } };
 const HOME_TARGET = new THREE.Vector3(0, 1.45, 0), HOME_DIR = new THREE.Vector3(10, 9.3, 14).normalize();
 const lampColor = new THREE.Color('#FFD9A0');
 const easeInOut = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -133,7 +135,9 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
   const vinyl = { index: 0, next: 0, pinned: null };
   function playAlbum(i) {
     vinyl.index = (i + ALBUMS.length) % ALBUMS.length;
-    furniture.record.label.map = texture(`assets/albums/${ALBUMS[vinyl.index].image}.webp`); furniture.record.label.needsUpdate = true;
+    // applyArtStyle swaps in a matte copy of every material, so update the one the label mesh actually wears.
+    const label = furniture.record.label.material;
+    label.map = texture(`assets/albums/${ALBUMS[vinyl.index].image}.webp`); label.color.set('#ffffff'); label.needsUpdate = true;
   }
   playAlbum(0);
   // The desk monitor plays the current project's demo (or shows its still).
@@ -389,8 +393,16 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
     toggleLamp() { lampOn = !lampOn; lampAuto = false; try { localStorage.setItem('katrina-room:lamp-on', String(lampOn)); } catch { /* fine */ } applyLamp(); return lampOn; },
     get lampOn() { return lampOn; },
     pet() { return cat.interact(); },
-    playAlbum(i) { vinyl.pinned = i; if (i !== null) playAlbum(i); else vinyl.next = 0; },
-    showShow(i) { tv.pinned = i; if (i !== null) showOnTv(i); else tv.next = 0; },
+    // Off the clock looks at the TV almost level, where the record is edge-on:
+    // picking a song leans the camera over the turntable to watch it spin, picking a show leans back.
+    playAlbum(i) {
+      vinyl.pinned = i; if (i !== null) playAlbum(i); else vinyl.next = 0;
+      if (mode === 'section' && activeSection.id === 'offclock') fly(sectionPose(i !== null ? RECORD_SHOT : activeSection), 1000);
+    },
+    showShow(i) {
+      tv.pinned = i; if (i !== null) showOnTv(i); else tv.next = 0;
+      if (i !== null && mode === 'section' && activeSection.id === 'offclock') fly(sectionPose(activeSection), 1000);
+    },
     highlightSection(id) { const s = sectionById(id); forced = s ? s.objects[0] : null; refreshGlow(); },
     onAnchors(cb) { anchorsCb = cb; },
     setParallax(x, y) { parallax.tx = x; parallax.ty = y; },
