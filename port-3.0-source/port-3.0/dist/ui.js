@@ -13,6 +13,11 @@ let room = null, current = null, projectIndex = 0, lastFocus = null;
 
 // ---------------- section content ----------------
 const photo = (name, alt, cls = '') => `<img class="${cls}" src="assets/photos/${name}" alt="${esc(alt)}" loading="lazy" decoding="async">`;
+// Katrina's hand-lettered words (assets/drawn/words, cut from her lettering sheet).
+// The image carries the word as alt text, so headings and buttons keep their names.
+const WORD = { projects: 'projects', skills: 'skills', experience: 'experience', education: 'education', books: 'my-books', offclock: 'off-the-clock', contact: 'say-hello' };
+const word = (slug, alt, cls = '') => `<img class="word ${cls}" src="assets/drawn/words/${slug}.png" alt="${esc(alt)}">`;
+const titleOf = s => WORD[s.id] ? word(WORD[s.id], s.title) : esc(s.title);
 const tags = list => `<ul class="tags">${list.map(t => `<li>${esc(t)}</li>`).join('')}</ul>`;
 
 // Soft paper tints from Katrina's palette (dark ink stays readable on all).
@@ -94,10 +99,18 @@ const render = {
     <ul class="orgs">${ORGS.map(o => `<li><span class="org-logo" style="--bg:${o.bg}"><img src="assets/orgs/${o.logo}.webp" alt="" loading="lazy"></span><b>${esc(o.name)}</b></li>`).join('')}</ul>`,
   offclock: () => `
     <p class="lede">${esc(OFF_CLOCK.text)}</p>
-    <h3 class="hand">on the tv right now</h3>
+    <h3 class="hand word-head">${word('tv-icon', '', 'tv-icon')}${word('on-the-tv-right-now', 'on the tv right now')}</h3>
+    <figure class="tv-drawn" aria-hidden="true"><img class="tv-pic" alt="" hidden><span class="tv-hint">pick a show</span><img class="tv-frame" src="assets/drawn/vinyl/tv-outline.png" alt=""></figure>
     <ul class="shows">${SHOWS.map((s, i) => `<li><button data-show="${i}" aria-pressed="false">${esc(s.title)}</button></li>`).join('')}</ul>
     <p class="aside">Pick one and it plays on the TV.</p>
-    <h3 class="hand">on the record player</h3>
+    <h3 class="hand word-head">${word('on-the-record-player', 'on the record player')}</h3>
+    <div class="spin" data-playing="false">
+      <div class="spin-disc" aria-hidden="true">
+        <img class="spin-edge" src="assets/drawn/vinyl/record-edge.png" alt="">
+        <img class="spin-f f1" src="assets/drawn/vinyl/spin-1.png" alt=""><img class="spin-f f2" src="assets/drawn/vinyl/spin-2.png" alt=""><img class="spin-f f3" src="assets/drawn/vinyl/spin-3.png" alt="">
+      </div>
+      <p class="spin-now" aria-live="polite">pick a record</p>
+    </div>
     <ul class="albums">${ALBUMS.map((a, i) => `<li><button data-album="${i}" aria-pressed="false" title="${esc(a.title)} · ${esc(a.artist)}"><img src="assets/albums/${a.image}.webp" alt="" loading="lazy"><span><b>${esc(a.title)}</b>${esc(a.artist)}</span></button></li>`).join('')}</ul>
     <h3 class="hand">front row seats</h3>
     <ul class="playbills">${OFF_CLOCK.playbills.map(p => `<li><span class="pb-head"><b>PLAYBILL</b><small>${esc(p.theatre)}</small></span><img src="assets/musicals/${p.image}.webp" alt="${esc(p.show)} poster art" loading="lazy"></li>`).join('')}</ul>
@@ -132,9 +145,10 @@ function go(id, { push = true } = {}) {
   $('meta[name="theme-color"]').content = section.ground;
   document.documentElement.style.setProperty('--sheet', section.sheet);
   document.documentElement.style.setProperty('--on-sheet', light(section.sheet) ? '#1E1631' : '#FFFDF8');
+  document.documentElement.style.setProperty('--word-filter', light(section.sheet) ? 'none' : 'invert(1)');
   // Katrina's arrows are white; on pale grounds they're inked instead.
   document.documentElement.style.setProperty('--arrow-filter', light(section.ground) ? INK_FILTER : 'drop-shadow(0 2px 3px rgb(30 22 49 / .25))');
-  $('#sheet-heading').textContent = section.title;
+  $('#sheet-heading').innerHTML = titleOf(section);
   $('#sheet-note').textContent = section.note;
   const after = SECTIONS[(order.indexOf(id) + 1) % order.length];
   $('#panel-inner').innerHTML = render[id]() + `<button class="next-up" data-go="${after.id}" data-cursor="next"><span class="hand">next up</span>${esc(after.title)} <img src="assets/drawn/scribble-b.webp" alt="" width="986" height="506"></button>`;
@@ -177,6 +191,9 @@ document.addEventListener('click', e => {
     const on = album.getAttribute('aria-pressed') !== 'true';
     document.querySelectorAll('[data-album]').forEach(b => b.setAttribute('aria-pressed', String(on && b === album)));
     room?.playAlbum(on ? Number(album.dataset.album) : null);
+    // Her drawn record: standing on its edge until a song plays, then spinning.
+    const spin = $('.spin');
+    if (spin) { spin.dataset.playing = String(on); spin.querySelector('.spin-now').textContent = on ? `now spinning: ${album.title}` : 'pick a record'; }
     return;
   }
   const see = e.target.closest('[data-see]');
@@ -194,6 +211,9 @@ document.addEventListener('click', e => {
     const i = Number(show.dataset.show), on = show.getAttribute('aria-pressed') !== 'true';
     document.querySelectorAll('[data-show]').forEach(b => b.setAttribute('aria-pressed', String(on && b === show)));
     room?.showShow(on ? i : null);
+    // The same show in her drawn TV, so the panel shows what the room's TV is playing.
+    const pic = $('.tv-pic');
+    if (pic) { if (on) pic.src = `assets/shows/${SHOWS[i].image}.webp`; pic.hidden = !on; $('.tv-hint').hidden = on; }
     return;
   }
   const t = e.target.closest('[data-go], [data-project-step], [data-project-jump]');
@@ -238,7 +258,7 @@ addEventListener('wheel', e => {
 function buildMenu() {
   // Three big doors first; the rest of the room sits in a quieter list below.
   const MAIN = ['projects', 'experience', 'about'];
-  const item = s => `<li><button data-go="${s.id}" style="--c:${s.ground}"><i></i>${esc(s.title)}</button></li>`;
+  const item = s => `<li><button data-go="${s.id}" style="--c:${s.ground}"><i></i>${titleOf(s)}</button></li>`;
   $('#menu-main').innerHTML = MAIN.map(id => item(sectionById(id))).join('');
   $('#menu-list').innerHTML = SECTIONS.filter(s => !MAIN.includes(s.id) && s.id !== 'contact').map(item).join('');
 }
