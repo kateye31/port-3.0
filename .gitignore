@@ -1,0 +1,9 @@
+node_modules/
+*.blend1
+
+# private notes, only on this computer
+notes/
+
+# screenshots and reports the checks write
+checks/shots/
+checks/site-results/

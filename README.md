@@ -58,7 +58,7 @@ On a phone, the room sits above a sheet you can pull down to see more of it.
 
 ## How it's built
 
-- **No framework, no build step.** Plain ES modules and Three.js (r180, vendored), served as static files from `port-3.0-source/port-3.0/dist`.
+- **No framework, no build step.** Plain ES modules and Three.js (r180, vendored), served as static files from `dist/`.
 - **The room shell** (walls, window, floor) was modelled in Blender (`source/katrina-room.blend`). Most of the furniture is built in code: the bed and bedding, desk, chair, monitor, bookcase and books, sideboard, coat rack, blazer, rug, plants and globe. That way each piece shares the same proportions, materials and edge softening.
 - **The books are my real shelf.** Each spine takes its colour from the actual cover and carries the real title and author.
 - **Motion and lighting** follow Orlando time: the sun through the window changes through the day, and the bedside lamp switches on after dark.
@@ -68,12 +68,22 @@ On a phone, the room sits above a sheet you can pull down to see more of it.
 ## Run it
 
 ```
-cd port-3.0-source/port-3.0
 npm install
 npm start
 ```
 
 Then open http://localhost:5173. Pushing to `main` publishes the site to katrinaadewale.dev through GitHub Actions.
+
+## What's where
+
+| Folder | What it is |
+|---|---|
+| `dist/` | The website itself: what katrinaadewale.dev serves |
+| `source/` | The Blender file for the room |
+| `art/` | My drawings, the original room sketch and the fonts |
+| `scripts/` | The little local server for `npm start` |
+| `checks/` | Screenshot and layout check scripts |
+| `docs/img/` | The screenshots in this README |
 
 ## Credits
 
