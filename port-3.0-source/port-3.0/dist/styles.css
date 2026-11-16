@@ -64,15 +64,21 @@ a { color: inherit; text-underline-offset: .18em; text-decoration-thickness: 1.5
 .loader-sketch { width: min(52vh, 72vw); opacity: 0; transition: opacity .45s var(--out), transform .9s var(--out), filter .9s var(--out); }
 .loader.full .loader-sketch { opacity: 1; }
 .loader-note { display: flex; align-items: center; gap: 12px; margin: 0; font: 22px/1 var(--hand); color: var(--ink-soft); }
-/* a little folding triangle beside the count, so the wait looks alive */
-.loader-tri { flex: none; width: 20px; aspect-ratio: 1; background: #826AED; clip-path: polygon(0 0, 100% 0, 100% 100%); animation: loader-fold 2s infinite cubic-bezier(.3, 1, 0, 1); }
+/* The folding triangle from css-loaders.com (shapes #2), beside the count. The original
+   animates clip-path, which the browser runs on the main thread, so it stalls while the
+   room is being built. Here the outline stays fixed and each quarter is a shear along one
+   edge, the same fold done with transforms, which the compositor keeps smooth. */
+.loader-tri { flex: none; width: 40px; aspect-ratio: 1; background: #25b09b; clip-path: polygon(0 0, 100% 0, 100% 100%); will-change: transform; animation: loader-fold 2s infinite cubic-bezier(.3, 1, 0, 1); }
 @keyframes loader-fold {
-  25%  { clip-path: polygon(0 0, 100% 0, 0 100%); background: #F05F5F; }
-  50%  { clip-path: polygon(0 0, 100% 100%, 0 100%); background: #3BC4D9; }
-  75%  { clip-path: polygon(100% 0, 100% 100%, 0 100%); background: #F2B544; }
-  100% { clip-path: polygon(100% 0, 100% 100%, 0 0); background: #826AED; }
+  0%      { transform: rotate(0deg)    translateX(0)    skewX(0deg); }
+  25%     { transform: rotate(0deg)    translateX(-50%) skewX(-45deg); }
+  25.01%  { transform: rotate(-90deg)  translateX(0)    skewX(0deg); }
+  50%     { transform: rotate(-90deg)  translateX(-50%) skewX(-45deg); }
+  50.01%  { transform: rotate(-180deg) translateX(0)    skewX(0deg); }
+  75%     { transform: rotate(-180deg) translateX(-50%) skewX(-45deg); }
+  75.01%  { transform: rotate(-270deg) translateX(0)    skewX(0deg); }
+  100%    { transform: rotate(-270deg) translateX(-50%) skewX(-45deg); }
 }
-.loader.full .loader-tri { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce) { .loader-tri { animation: none; } }
 body:not([data-view="loading"]) .loader { opacity: 0; visibility: hidden; }
 body:not([data-view="loading"]) .loader-sketch { transform: scale(1.12); filter: blur(6px); }
