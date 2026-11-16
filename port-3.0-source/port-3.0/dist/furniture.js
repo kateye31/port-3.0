@@ -549,7 +549,7 @@ export function suitJacket() {
 }
 
 // ---------------- desk globe ----------------
-// A 30 cm desk globe: NASA's Blue Marble map (assets/EARTH-CREDITS.txt) on a
+// A 30 cm political desk globe (map: assets/EARTH-CREDITS.txt) on a
 // varnished sphere, held on a brass half-meridian tipped to Earth's 23.4° axis,
 // over a turned walnut stand. Origin at the bottom of the stand.
 export function deskGlobe() {
