@@ -1,4 +1,4 @@
-// Katrina's local time (Orlando, America/New_York) drives the home colour
+// my local time (Orlando, America/New_York) drives the home colour
 // field and the room's light. Keyframes are blended by the hour.
 const ZONE = 'America/New_York';
 

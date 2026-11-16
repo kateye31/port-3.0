@@ -8,10 +8,10 @@ export const LINKS = Object.freeze({
 });
 
 export const ABOUT = {
-  lede: 'Software engineer, leader, STEM advocate, designer, author and cat-lover.',
+  lede: 'Hi, I’m Katrina! I’m a software engineer who also designs, writes, and can’t walk past a cat.',
   body: [
-    'I study Computer Science and Intelligent Robotic Systems at the University of Central Florida, and I’m a UCF STEM Ambassador who loves talking STEM around Orlando.',
-    'I like staying involved, meeting new people and travelling any chance I get. The world is big, so why not explore it?',
+    'I’m at UCF studying Computer Science with a minor in Intelligent Robotic Systems. I’m also a STEM Ambassador, so I get to visit schools around Orlando and show kids that engineering is actually fun.',
+    'I say yes to a lot: clubs, hackathons, organizing things (somehow I keep ending up team lead), and any trip I can afford. The world is big and I’d like to see most of it.',
   ],
   likes: ['animals', 'travelling', 'musicals', 'dancing', 'cooking for friends', 'making cool things together'],
 };
@@ -25,13 +25,13 @@ export const SKILLS = [
 ];
 
 // Featured first (Fireline, LeetField), then Genesis AI and the rest. media is
-// what plays on the desk monitor: demo videos (from Katrina's site GIFs), the
+// what plays on the desk monitor: demo videos (from my site GIFs), the
 // Phantom Wall YouTube thumbnail, or a screenshot. Unsplash only where no
 // screenshot exists yet.
 export const PROJECTS = [
-  { id: 'fireline', title: 'Fireline', featured: true, wins: 2, when: 'Knight Hacks IX · Oct 2026',
+  { id: 'fireline', title: 'Fireline', featured: true, wins: 2, award: '1st + 3rd place', when: 'Knight Hacks IX · Oct 2026',
     media: { image: 'assets/projects/fireline.webp' }, tags: ['NVIDIA Jetson', 'YOLO + TensorRT', 'ESP32', 'FastAPI', 'React'],
-    text: 'Tree-mounted camera units that spot wildfire smoke on the device, in forests with no power or internet, and send one alert packet of 340 bytes or less over a satellite link.',
+    text: 'Awarded 1st and 3rd place at Knight Hacks IX. Fireline is a set of tree-mounted camera units that spot wildfire smoke right on the device, out in forests with no power or internet, then send a single alert of 340 bytes or less over satellite.',
     links: [['GitHub', 'https://github.com/kateye31/fireline']], note: 'Demo video coming soon.',
     photos: [
       { image: 'kh-team.webp', caption: 'the team + our prototype', alt: 'Katrina and the Fireline team at Knight Hacks IX holding the tree-mounted camera prototype' },
@@ -98,7 +98,7 @@ export const ORGS = [
   { name: 'Knight Research Scholars', logo: 'krs', bg: '#1E1631' },
 ];
 
-// Stills from katrinaadewale.dev's "What I've been watching" shelf.
+// Stills from my old site’s "What I've been watching" shelf.
 export const SHOWS = [
   { title: 'Howl’s Moving Castle', image: 'howls-moving-castle' },
   { title: 'One Piece', image: 'one-piece' },

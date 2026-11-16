@@ -1,0 +1,2 @@
+earth.webp: "Blue Marble Next Generation + topography + bathymetry", NASA Earth Observatory (Reto Stockli). Public domain.
+  https://commons.wikimedia.org/wiki/File:Blue_Marble_Next_Generation_%2B_topography_%2B_bathymetry.jpg

@@ -21,8 +21,6 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // (phones, portrait tablets); short = side-by-side squeezed into a landscape phone.
 const STACKED = matchMedia('(max-width: 759px) and (min-height: 501px), (max-width: 1100px) and (orientation: portrait)');
 const SHORT = matchMedia('(max-height: 500px) and (orientation: landscape)');
-// The turntable from above, for when a record is playing (see playAlbum below).
-const RECORD_SHOT = { shot: { frame: ['record-player'], dir: [.15, 1.1, 1], fit: 1.3, minRadius: .55 } };
 const HOME_TARGET = new THREE.Vector3(0, 1.45, 0), HOME_DIR = new THREE.Vector3(10, 9.3, 14).normalize();
 const lampColor = new THREE.Color('#FFD9A0');
 const easeInOut = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -31,8 +29,14 @@ const easeOut = t => 1 - Math.pow(1 - t, 3);
 export async function createRoom({ canvas, onProgress = () => {} }) {
   const host = canvas.parentElement;
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
-  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  // Always drawn at the screen's own sharpness (up to 2x). Only a machine that
+  // truly can't keep up loses the ink lines; the picture itself is never softened.
+  let dpr = Math.min(devicePixelRatio, 2), slow = 0, tick = 0, beat = 34;   // beat: the display's own frame interval, learned below
+  const tuned = !navigator.webdriver;
+  renderer.setPixelRatio(dpr);
+  // Nothing that casts a shadow moves, so the shadow maps are only redrawn when the light changes.
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.shadowMap.autoUpdate = false;
+  let shadowsStale = 30;
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.04;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
@@ -58,7 +62,9 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
   const floorShadow = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.ShadowMaterial({ opacity: .14 }));
   floorShadow.rotation.x = -Math.PI / 2; floorShadow.position.y = -.31; floorShadow.receiveShadow = true; scene.add(floorShadow);
 
-  const composer = new EffectComposer(renderer);
+  // The composer's own buffers are multisampled, so edges stay smooth through the post passes.
+  const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 }));
+  composer.setPixelRatio(dpr);
   composer.addPass(new RenderPass(scene, camera));
   const inkPass = createInkPass(scene, camera); composer.addPass(inkPass);
   const outline = new OutlinePass(new THREE.Vector2(800, 600), scene, camera);
@@ -66,15 +72,19 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
   solidOutline(outline);
   composer.addPass(outline); composer.addPass(new OutputPass());
 
-  const gltf = await new GLTFLoader().loadAsync('assets/room.glb', e => { if (e.total) onProgress(e.loaded / e.total); });
+  // Loading runs in three legs: the room itself, the furniture, then the cat and the finishing touches.
+  const leg = (from, to) => p => onProgress(from + (to - from) * Math.min(1, p));
+  const roomLeg = leg(0, .55), ROOM_BYTES = 6.1e6;
+  const gltf = await new GLTFLoader().loadAsync('assets/room.glb', e => roomLeg(e.loaded / (e.total || ROOM_BYTES)));
   const model = gltf.scene; scene.add(model); model.updateMatrixWorld(true);
 
-  const furniture = await furnish(model);
+  const furniture = await furnish(model, leg(.55, .9));
   // ?debug exposes the scene to checks/ scripts for close-up prop inspection.
   if (new URLSearchParams(location.search).has('debug')) window.__room = { scene, camera, controls, model, THREE };
   addEducationWall(model);
   inkPass.selectedObjects = applyArtStyle(model);
   const cat = await createCat(model, { reduced });
+  onProgress(.96);
   inkPass.selectedObjects.push(...meshesOf(cat.object));
   // The bedside lamp: its shade glows, and a point light sits just above it.
   furniture.lampBulb.traverse(o => { if (o.isMesh && /lamp/i.test(o.material.name)) o.userData.lampEmission = 1.4; });
@@ -105,8 +115,9 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
   }
 
   // Screens: the desk monitor shows the current project; the TV flips through
-  // Katrina's favourite shows.
+  // my favourite shows.
   const textureLoader = new THREE.TextureLoader(), textures = new Map();
+  let tvChanged = false;      // a new still must be drawn even while the frame loop is idling
   const texture = url => {
     if (!textures.has(url)) { const t = textureLoader.load(url); t.colorSpace = THREE.SRGBColorSpace; textures.set(url, t); }
     return textures.get(url);
@@ -121,17 +132,20 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
       const src = tex.image; const w = src?.videoWidth || src?.naturalWidth || src?.width, h = src?.videoHeight || src?.naturalHeight || src?.height;
       if (w && h) cover(tex, w / h, screen.userData.aspect);
     };
-    fit(); if (tex.image?.addEventListener) { tex.image.addEventListener('load', fit, { once: true }); tex.image.addEventListener('loadedmetadata', fit, { once: true }); }
+    // Only wait for media that hasn't loaded yet; a finished image would never fire, and the listener would pile up.
+    const img = tex.image, pending = img && (img.tagName === 'VIDEO' ? img.readyState < 1 : img.complete === false);
+    fit(); if (pending) { img.addEventListener('load', fit, { once: true }); img.addEventListener('loadedmetadata', fit, { once: true }); }
     m.map = tex; m.color.set('#ffffff'); m.needsUpdate = true;
   }
   const tv = { index: 0, next: 0, pinned: null };
   function showOnTv(i) {
     tv.index = (i + SHOWS.length) % SHOWS.length;
     showOn(furniture.tv, texture(`assets/shows/${SHOWS[tv.index].image}.webp`));
+    tvChanged = true;
   }
   SHOWS.forEach(s => texture(`assets/shows/${s.image}.webp`));   // warm the cache: no black flashes
   showOnTv(0);
-  // The record player spins one of Katrina's favourite albums.
+  // The record player spins one of my favourite albums.
   const vinyl = { index: 0, next: 0, pinned: null };
   function playAlbum(i) {
     vinyl.index = (i + ALBUMS.length) % ALBUMS.length;
@@ -158,6 +172,7 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
   let lampOn = true;
   try { const saved = localStorage.getItem('katrina-room:lamp-on'); if (saved) { lampOn = saved === 'true'; lampAuto = false; } } catch { /* storage blocked */ }
   function applyLamp() {
+    shadowsStale = 3;
     lamp.intensity = lampOn ? (light?.night ? 9 : 6) : 0;
     objects.get(LAMP.key).traverse(o => {
       if (!o.isMesh || !o.userData.lampEmission) return;
@@ -173,7 +188,7 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
   function setClock(l) {
     light = l;
     const height = 2.2 + l.height * 5.5;
-    sun.position.set(-9, height, 3.5 - l.height * 2); sun.color.set(l.sunColor); sun.intensity = l.sun;
+    sun.position.set(-9, height, 3.5 - l.height * 2); sun.color.set(l.sunColor); sun.intensity = l.sun; shadowsStale = 3;
     hemi.intensity = l.ambient; hemi.color.set(l.night ? '#9AA8E8' : '#E7EEFF');
     fill.intensity = l.night ? .25 : .85; fill.color.set(l.night ? '#9FA8FF' : '#FFE6F4');
     renderer.toneMappingExposure = l.night ? .95 : 1.04;
@@ -222,7 +237,8 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
     // Leave room for the page: name on the left at home, content on the
     // right (desktop) or bottom (phone) inside a section.
     const phone = STACKED.matches;
-    if (mode === 'home') { shift.tx = phone ? 0 : SHORT.matches ? -.2 : -.235; shift.ty = phone ? (width >= 760 ? -.17 : -.2) : 0; }
+    // At home the room sits as far right as it can while still fitting whole.
+    if (mode === 'home') { shift.tx = phone ? 0 : SHORT.matches ? -.2 : -Math.min(.235, Math.max(.1, .49 - .478 * height / width)); shift.ty = phone ? (width >= 760 ? -.17 : -.2) : 0; }
     else {
       // Centre the object in the space left of the panel (its width per styles.css, plus the gutter).
       const panel = SHORT.matches ? width * .48 + 12 : width <= 1100 ? width * .44 + Math.max(16, width * .045) : Math.min(500, width * .38) + Math.min(72, Math.max(16, width * .045));
@@ -301,6 +317,7 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
     }
     outline.edgeStrength = 6 * peak;
     if (peak === 0) outline.selectedObjects = [];
+    return peak;
   }
 
   canvas.addEventListener('pointermove', e => { pendingMove = e; if (press && Math.hypot(e.clientX - press.x, e.clientY - press.y) > 6) press.dragged = true; });
@@ -319,18 +336,28 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
   });
 
   // ---------- frame loop ----------
-  const anchor = new THREE.Vector3();
+  const anchor = new THREE.Vector3(), seen = { position: new THREE.Vector3(), target: new THREE.Vector3(), x: 0, y: 0 };
   let last = performance.now(), anchorsCb = null;
   new ResizeObserver(resize).observe(host); resize();
   renderer.setAnimationLoop(() => {
     if (document.hidden) { last = performance.now(); return; }
-    const now = performance.now(), dt = Math.min(.05, (now - last) / 1000); last = now;
+    const now = performance.now(), ms = now - last, dt = Math.min(.05, ms / 1000); last = now;
+    if (tuned) {
+      // A frame is slow when it misses the display's cadence, whatever that is (60 Hz, 120 Hz, a 30 Hz battery saver).
+      if (ms > 4) beat = Math.min(beat, ms);
+      slow = ms > beat * 1.6 ? slow + 1 : Math.max(0, slow - 1);
+      if (slow > 120) {
+        slow = 0;
+        if (ms > Math.max(50, beat * 3)) inkPass.enabled = false;
+      }
+    }
+    if (shadowsStale) { renderer.shadowMap.needsUpdate = true; shadowsStale--; }
     if (pendingMove && !press?.dragged && !flight) { setHover(pick(pendingMove.clientX, pendingMove.clientY)); pendingMove = null; }
     cat.update(dt);
-    if (tv.pinned === null && now > tv.next) { if (tv.next) showOnTv(tv.index + 1); tv.next = now + 3800; }
+    if (tv.pinned === null && now > tv.next) { if (tv.next) showOnTv(tv.index + 1); tv.next = now + 9000; }
     if (!reduced) furniture.record.disk.rotation.y -= dt * 3.5;    // 33⅓ rpm
     if (vinyl.pinned === null && now > vinyl.next) { if (vinyl.next) playAlbum(vinyl.index + 1); vinyl.next = now + 6000; }
-    stepGlow(now);
+    const glowing = stepGlow(now) > 0;
 
     const gp = Math.min(1, (now - ground.at) / 700);
     scene.background.copy(ground.from).lerp(ground.to, easeOut(gp));
@@ -347,10 +374,11 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
       controls.target.lerp(p.target, .04); camera.position.lerp(p.position, .04);
     }
     // Gentle pointer parallax inside a section; the room "breathes" with you.
-    parallax.x += (parallax.tx - parallax.x) * .05; parallax.y += (parallax.ty - parallax.y) * .05;
+    const drift = 1 - Math.exp(-ms * .003), settle = reduced ? 1 : 1 - Math.exp(-ms * .005);
+    parallax.x += (parallax.tx - parallax.x) * drift; parallax.y += (parallax.ty - parallax.y) * drift;
     const k = reduced ? 0 : .012;
-    shift.x += (shift.tx + parallax.x * k - shift.x) * (reduced ? 1 : .08);
-    shift.y += (shift.ty + parallax.y * k - shift.y) * (reduced ? 1 : .08);
+    shift.x += (shift.tx + parallax.x * k - shift.x) * settle;
+    shift.y += (shift.ty + parallax.y * k - shift.y) * settle;
     applyViewOffset();
     if (controls.enabled) controls.update(); else camera.lookAt(controls.target);
 
@@ -371,6 +399,12 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
       }
       anchorsCb(points);
     }
+    // With the camera at rest only the record is turning, so every other frame is enough.
+    const still = seen.position.distanceToSquared(camera.position) < 1e-9 && seen.target.distanceToSquared(controls.target) < 1e-9 && Math.abs(seen.x - shift.x) + Math.abs(seen.y - shift.y) < 2e-5;
+    seen.position.copy(camera.position); seen.target.copy(controls.target); seen.x = shift.x; seen.y = shift.y;
+    const demoPlaying = video && !video.paused && activeSection?.id === 'projects';
+    if (still && !flight && !press && !tvChanged && !glowing && !demoPlaying && gp === 1 && !shadowsStale && tick++ % 2) return;
+    tvChanged = false;
     composer.render();
   });
 
@@ -393,16 +427,9 @@ export async function createRoom({ canvas, onProgress = () => {} }) {
     toggleLamp() { lampOn = !lampOn; lampAuto = false; try { localStorage.setItem('katrina-room:lamp-on', String(lampOn)); } catch { /* fine */ } applyLamp(); return lampOn; },
     get lampOn() { return lampOn; },
     pet() { return cat.interact(); },
-    // Off the clock looks at the TV almost level, where the record is edge-on:
-    // picking a song leans the camera over the turntable to watch it spin, picking a show leans back.
-    playAlbum(i) {
-      vinyl.pinned = i; if (i !== null) playAlbum(i); else vinyl.next = 0;
-      if (mode === 'section' && activeSection.id === 'offclock') fly(sectionPose(i !== null ? RECORD_SHOT : activeSection), 1000);
-    },
-    showShow(i) {
-      tv.pinned = i; if (i !== null) showOnTv(i); else tv.next = 0;
-      if (i !== null && mode === 'section' && activeSection.id === 'offclock') fly(sectionPose(activeSection), 1000);
-    },
+    // Picking a record or a show changes what is playing; the camera stays where it is.
+    playAlbum(i) { vinyl.pinned = i; if (i !== null) playAlbum(i); else vinyl.next = 0; },
+    showShow(i) { tv.pinned = i; if (i !== null) showOnTv(i); else tv.next = 0; },
     highlightSection(id) { const s = sectionById(id); forced = s ? s.objects[0] : null; refreshGlow(); },
     onAnchors(cb) { anchorsCb = cb; },
     setParallax(x, y) { parallax.tx = x; parallax.ty = y; },

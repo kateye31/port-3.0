@@ -16,7 +16,7 @@ http.createServer((req,res) => {
   } catch {
     res.writeHead(404,{'Content-Type':'text/plain'});res.end('Not found');return;
   }
-  res.writeHead(200,{'Content-Type':types[path.extname(file)] || 'application/octet-stream','Cache-Control':'no-cache'});
+  res.writeHead(200,{'Content-Type':types[path.extname(file)] || 'application/octet-stream','Cache-Control':'no-cache','X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin','X-Frame-Options':'DENY'});
   if (req.method === 'HEAD') {res.end();return;}
   fs.createReadStream(file).pipe(res);
 }).listen(port,'127.0.0.1',() => console.log(`Portfolio: http://localhost:${port} — Ctrl+C to stop`));

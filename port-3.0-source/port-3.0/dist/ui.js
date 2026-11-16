@@ -15,7 +15,7 @@ let room = null, current = null, projectIndex = 0, lastFocus = null;
 const photo = (name, alt, cls = '') => `<img class="${cls}" src="assets/photos/${name}" alt="${esc(alt)}" loading="lazy" decoding="async">`;
 const tags = list => `<ul class="tags">${list.map(t => `<li>${esc(t)}</li>`).join('')}</ul>`;
 
-// Soft paper tints from Katrina's palette (dark ink stays readable on all).
+// Soft paper tints from my palette (dark ink stays readable on all).
 const PAPERS = [
   ['#FFF1C9', '#F05F5F', '#6FA8FF'],   // butter
   ['#FFE0F2', '#826AED', '#3BF4FB'],   // pink
@@ -44,7 +44,7 @@ const render = {
   skills: () => `
     <div class="badges" aria-hidden="true">${BADGES.map(b => `<img src="assets/badges/${b.file}.svg" alt="" height="28" loading="lazy">`).join('')}</div>
     <div class="bluecard">
-      ${SKILLS.map(g => `<h3 class="hand">${esc(g.group)}</h3><ul class="dots">${g.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul>`).join('')}
+      ${SKILLS.map(g => `<h3 class="hand">${esc(g.group)}</h3><p class="skill-line">${esc(g.items.join(', '))}</p>`).join('')}
     </div>
     <p class="aside">The same blocks are in the skills book on the coffee table.</p>`,
   projects: () => {
@@ -61,7 +61,7 @@ const render = {
         <p class="card-meta"><span class="tabular">${projectIndex + 1} / ${PROJECTS.length}</span></p>
         <h3 class="card-title">${esc(p.title)}${p.subtitle ? `<small>${esc(p.subtitle)}</small>` : ''}</h3>
         ${p.when ? `<p class="hand when">${esc(p.when)}</p>` : ''}
-        ${p.wins ? `<p class="card-wins" aria-label="${p.wins} wins">${'<img src="assets/drawn/trophy.png" alt="" width="290" height="325">'.repeat(p.wins)}<span class="hand">${p.wins} wins!</span></p>` : ''}
+        ${p.wins ? `<p class="card-wins" aria-label="${p.wins} wins">${'<img src="assets/drawn/trophy.png" alt="" width="290" height="325">'.repeat(p.wins)}<span class="hand">${esc(p.award || `${p.wins} wins!`)}</span></p>` : ''}
         <ul class="chips">${p.tags.map(t => `<li>${esc(t)}</li>`).join('')}</ul>
         <p class="card-text">${esc(p.text)}</p>
         ${p.note ? `<p class="hand card-note">${esc(p.note)}</p>` : ''}
@@ -88,8 +88,10 @@ const render = {
     <ul class="moments">${MOMENTS.map(m => `<li><span class="hand when">${esc(m.when)}</span><b>${esc(m.what)}</b><span>${esc(m.note)}</span></li>`).join('')}</ul>`,
   education: () => `
     ${EDUCATION.map(e => `<div class="school"><p class="hand when">${esc(e.when)}</p><h3>${esc(e.degree)}</h3><p class="org">${esc(e.school)}</p><p>${esc(e.detail)}</p></div>`).join('')}
-    <h3 class="hand">awards &amp; scholarships</h3>${tags(AWARDS)}
-    <h3 class="hand">coursework I liked</h3>${tags(COURSEWORK)}
+    <h3 class="hand">awards &amp; scholarships</h3>
+    <ul class="plain starred">${AWARDS.map(a => { const [name, where] = a.split(' · '); return `<li>${esc(name)}${where ? `<span>${esc(where)}</span>` : ''}</li>`; }).join('')}</ul>
+    <h3 class="hand">coursework I liked</h3>
+    <ul class="plain">${COURSEWORK.map(c => `<li>${esc(c)}</li>`).join('')}</ul>
     <h3 class="hand">where you’ll find me</h3>
     <ul class="orgs">${ORGS.map(o => `<li><span class="org-logo" style="--bg:${o.bg}"><img src="assets/orgs/${o.logo}.webp" alt="" loading="lazy"></span><b>${esc(o.name)}</b></li>`).join('')}</ul>`,
   offclock: () => `
@@ -99,6 +101,7 @@ const render = {
     <p class="aside">Pick one and it plays on the TV.</p>
     <h3 class="hand">on the record player</h3>
     <ul class="albums">${ALBUMS.map((a, i) => `<li><button data-album="${i}" aria-pressed="false" title="${esc(a.title)} · ${esc(a.artist)}"><img src="assets/albums/${a.image}.webp" alt="" loading="lazy"><span><b>${esc(a.title)}</b>${esc(a.artist)}</span></button></li>`).join('')}</ul>
+    <p class="aside">Pick a record to drop the needle. What plays is public-domain piano, so the albums themselves stay on my shelf.</p>
     <h3 class="hand">front row seats</h3>
     <ul class="playbills">${OFF_CLOCK.playbills.map(p => `<li><span class="pb-head"><b>PLAYBILL</b><small>${esc(p.theatre)}</small></span><img src="assets/musicals/${p.image}.webp" alt="${esc(p.show)} poster art" loading="lazy"></li>`).join('')}</ul>
     <p>${esc(OFF_CLOCK.stage)}</p>
@@ -132,7 +135,7 @@ function go(id, { push = true } = {}) {
   $('meta[name="theme-color"]').content = section.ground;
   document.documentElement.style.setProperty('--sheet', section.sheet);
   document.documentElement.style.setProperty('--on-sheet', light(section.sheet) ? '#1E1631' : '#FFFDF8');
-  // Katrina's arrows are white; on pale grounds they're inked instead.
+  // my arrows are white; on pale grounds they're inked instead.
   document.documentElement.style.setProperty('--arrow-filter', light(section.ground) ? INK_FILTER : 'drop-shadow(0 2px 3px rgb(30 22 49 / .25))');
   $('#sheet-heading').textContent = section.title;
   $('#sheet-note').textContent = section.note;
@@ -177,6 +180,7 @@ document.addEventListener('click', e => {
     const on = album.getAttribute('aria-pressed') !== 'true';
     document.querySelectorAll('[data-album]').forEach(b => b.setAttribute('aria-pressed', String(on && b === album)));
     room?.playAlbum(on ? Number(album.dataset.album) : null);
+    if (on) music.play(Number(album.dataset.album)); else music.pause();
     return;
   }
   const see = e.target.closest('[data-see]');
@@ -295,8 +299,8 @@ function placeHotspots(points) {
 }
 
 // ---------------- cursor ----------------
-// Trails the pointer with a lerp (like the reference), grows into one of
-// Katrina's drawn cursor states over things you can act on.
+// Trails the pointer with a lerp, grows into one of
+// my drawn cursor states over things you can act on.
 function setupCursor() {
   if (!finePointer) return null;
   body.classList.add('has-cursor');
@@ -342,7 +346,7 @@ function setupCursor() {
   };
 }
 
-// ---------------- Katrina's local time ----------------
+// ---------------- my local time ----------------
 let homeLight = { ground: HOME.ground, ink: HOME.ink };
 function tickClock() {
   const l = lightAt(orlandoNow().hour);
@@ -360,7 +364,7 @@ function tickClock() {
 tickClock(); setInterval(tickClock, 30000);
 
 // Private visit log: one silent hit per browser session, never shown on the
-// page. Katrina reads the number at abacus.jasoncameron.dev/get/katrinaadewale-dev/views.
+// page. I read the number at abacus.jasoncameron.dev/get/katrinaadewale-dev/views.
 // Local previews count against a separate key so they never touch the real number.
 try {
   if (!sessionStorage.getItem('counted')) {
@@ -379,6 +383,37 @@ if (!reduced) setInterval(() => {
   n.style.cssText = `left:${vinylAt.x}px;top:${vinylAt.y}px;--dx:${drift}px;--rot:${(Math.random() - .5) * 40}deg;--s:${body.dataset.section === 'offclock' ? .8 : .5}`;
   $('#notes').append(n); n.addEventListener('animationend', () => n.remove());
 }, 2600);
+
+// ---------------- the record player's music ----------------
+// Public-domain piano (assets/music/CREDITS.txt). Nothing loads or plays until
+// someone asks for it, by picking a record or from the menu.
+const TRACKS = [
+  { title: 'Chopin, Nocturne Op. 9 No. 2', src: 'assets/music/nocturne-op9-2.mp3', type: 'audio/mpeg' },
+  { title: 'Satie, Gymnopédie No. 1', src: 'assets/music/gymnopedie-1.ogg', type: 'audio/ogg; codecs="vorbis"' },
+  { title: 'Satie, Gnossienne No. 1', src: 'assets/music/gnossienne-1.ogg', type: 'audio/ogg; codecs="vorbis"' },
+];
+const music = (() => {
+  const menuButton = $('#music-button');
+  let audio = null, list = TRACKS, track = 0, playing = false;
+  function paint() { menuButton.textContent = `music: ${playing ? 'on' : 'off'}`; menuButton.setAttribute('aria-pressed', String(playing)); }
+  function ready() {
+    if (audio) return;
+    audio = new Audio(); audio.preload = 'none'; audio.volume = .6;
+    list = TRACKS.filter(t => audio.canPlayType(t.type)); if (!list.length) list = TRACKS.slice(0, 1);
+    audio.addEventListener('ended', () => play(track + 1));
+    audio.addEventListener('error', () => { playing = false; paint(); });
+  }
+  function play(i = track) {
+    ready(); const next = ((i % list.length) + list.length) % list.length;
+    if (next !== track || !audio.src) { track = next; audio.src = list[track].src; }
+    playing = true; paint();
+    audio.play().catch(() => { playing = false; paint(); });
+  }
+  function pause() { audio?.pause(); playing = false; paint(); }
+  menuButton.addEventListener('click', () => { if (playing) pause(); else play(); });
+  paint();
+  return { play, pause };
+})();
 
 // ---------------- project demos ----------------
 // Videos only exist while Projects is open: the card plays the demo and the
@@ -420,7 +455,15 @@ function reveal() {
 }
 (async () => {
   const pct = $('#loader-pct');
-  const setProgress = p => { pct.textContent = `${Math.round(p * 100)}%`; document.documentElement.style.setProperty('--load', p); };
+  // The number counts up toward the real progress instead of jumping to it.
+  let real = 0, shown = 0, counted;
+  const full = new Promise(ok => { counted = ok; });
+  const setProgress = p => { real = Math.max(real, Math.min(1, p)); };
+  (function count() {
+    shown = reduced ? real : Math.min(real, shown + Math.max(.006, (real - shown) * .07));
+    pct.textContent = `${Math.floor(shown * 100)}%`;
+    if (shown >= 1) { $('#loader')?.classList.add('full'); counted(); } else requestAnimationFrame(count);
+  })();
   try {
     const { createRoom } = await import('./room.js');
     room = await createRoom({ canvas: $('#room-canvas'), onProgress: setProgress });
@@ -428,10 +471,12 @@ function reveal() {
     room.onAnchors(placeHotspots);
     syncScreen();
     tickClock();
-    // Let the sketch finish "drawing" before it hands over to the real room.
-    setTimeout(reveal, reduced ? 0 : 450);
+    // Count to 100, show the sketch for a beat, then hand over to the real room.
+    await full;
+    setTimeout(reveal, reduced ? 0 : 700);
   } catch (error) {
     console.error('The 3D room could not open', error);
+    setProgress(1);   // lets the counter finish and stop
     body.classList.add('no-room');
     $('#loader-text').textContent = 'the 3D room needs WebGL, so here is the paper version';
     setTimeout(reveal, 1200);

@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-DMUMbakyPffSnql8XgUOiWKLXyTzINB6e9E0l4EGHiI='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self' blob: data: https://abacus.jasoncameron.dev; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="theme-color" content="#FFC49B">
   <meta name="description" content="Katrina Adewale: software engineer and UCF Computer Science student. Walk around her room to see projects, experience and her résumé.">
   <title>Katrina Adewale</title>
   <link rel="icon" type="image/png" href="assets/drawn/star-cat-icon.png">
   <link rel="preload" href="assets/fonts/ChewyPro.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="assets/fonts/KatrinaHand.otf" as="font" type="font/otf" crossorigin>
-  <link rel="preload" href="assets/fonts/Rubik-Regular.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="assets/drawn/sketch.webp" as="image">
   <link rel="stylesheet" href="styles.css">
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js","three/addons/":"./vendor/addons/"}}</script>
@@ -31,6 +32,7 @@
       <img class="mark-name" src="assets/drawn/name.webp" alt="" width="772" height="345">
     </a>
     <nav class="topnav" aria-label="Main">
+      </div>
       <a class="nav-cat" href="#" data-go="home" aria-label="Back to the room"><img src="assets/drawn/star-cat.webp" alt="" width="800" height="732"></a>
       <button class="chip chip-work" id="nav-work" data-go="projects" aria-current="false">Work</button>
       <button class="chip chip-work chip-exp" id="nav-exp" data-go="experience" aria-current="false">Experience</button>
@@ -92,6 +94,7 @@
           <a href="https://github.com/kateye31" target="_blank" rel="noopener">GitHub</a>
           <a href="https://linkedin.com/in/katrina-adewale" target="_blank" rel="noopener">LinkedIn</a>
           <button id="lamp-button" aria-pressed="true">lamp: on</button>
+          <button id="music-button" aria-pressed="false">music: off</button>
         </div>
       </div>
     </div>

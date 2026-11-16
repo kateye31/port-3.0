@@ -1,5 +1,8 @@
-/* Katrina Hand: built from Katrina's own brush alphabet (letters only).
-   Numbers and symbols fall back to Little Marker. Rubik (OFL) for paragraphs. */
+/* Katrina Hand: built from my own brush alphabet (letters only).
+   Numbers and symbols fall back to Little Marker. Paragraphs are Century Gothic;
+   where it isn't installed, Adventor (same family of letterforms) is fetched instead. */
+@font-face { font-family: 'Adventor'; src: url(assets/fonts/Adventor-Regular.otf) format('opentype'); font-weight: 400 500; font-display: swap; }
+@font-face { font-family: 'Adventor'; src: url(assets/fonts/Adventor-Bold.otf) format('opentype'); font-weight: 600 700; font-display: swap; }
 @font-face { font-family: 'Katrina Hand'; src: url(assets/fonts/KatrinaHand.otf) format('opentype'); font-display: swap; }
 @font-face { font-family: 'Chewy Pro'; src: url(assets/fonts/ChewyPro.ttf) format('truetype'); font-display: swap; }
 @font-face { font-family: 'Little Marker'; src: url(assets/fonts/LittleMarker.otf) format('opentype'); font-display: swap; }
@@ -16,12 +19,11 @@
   --tint: #FFD3FF;
   --sheet: #C879FF;
   --arrow-filter: none;
-  --load: 0;
   --display: 'Chewy Pro', 'Rubik', system-ui, sans-serif;
   --title: 'Chewy Pro', 'Rubik', system-ui, sans-serif;
   --hand: 'Little Marker', 'Chewy Pro', cursive;
   --her-hand: 'Katrina Hand', 'Little Marker', cursive;   /* front page notes only */
-  --text: 'Rubik', system-ui, sans-serif;
+  --text: 'Century Gothic', CenturyGothic, 'Adventor', 'Rubik', system-ui, sans-serif;
   /* Motion: strong ease-out for things arriving, ease-in-out for things travelling. */
   --out: cubic-bezier(.23, 1, .32, 1);
   --in-out: cubic-bezier(.77, 0, .175, 1);
@@ -34,7 +36,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; }
 body {
   background: var(--ground);
   color: var(--ink);
-  font: 400 16px/1.6 var(--text);
+  font: 400 15.5px/1.65 var(--text);
   -webkit-font-smoothing: antialiased;
   transition: background-color .7s var(--out);
 }
@@ -53,12 +55,14 @@ a { color: inherit; text-underline-offset: .18em; text-decoration-thickness: 1.5
 #room-canvas { display: block; width: 100%; height: 100%; touch-action: none; }
 .no-room .stage { background: url(assets/drawn/sketch.webp) 70% 55% / auto 70vh no-repeat; }
 
-/* ---------- loader: her sketch draws itself, then hands over to the real room ---------- */
+/* ---------- loader: my sketch draws itself, then hands over to the real room ---------- */
 .loader {
   position: fixed; inset: 0; z-index: 40; display: grid; place-content: center; justify-items: center; gap: 18px;
   background: var(--ground); transition: opacity .8s var(--out), visibility 0s .8s;
 }
-.loader-sketch { width: min(52vh, 72vw); clip-path: inset(0 calc((1 - var(--load)) * 100%) 0 0); transition: clip-path .5s var(--out), transform .9s var(--out), filter .9s var(--out); }
+/* Only the number moves while things load. At 100% the sketch fades in, then the loader fades away to the room. */
+.loader-sketch { width: min(52vh, 72vw); opacity: 0; transition: opacity .45s var(--out), transform .9s var(--out), filter .9s var(--out); }
+.loader.full .loader-sketch { opacity: 1; }
 .loader-note { margin: 0; font: 22px/1 var(--hand); color: var(--ink-soft); }
 body:not([data-view="loading"]) .loader { opacity: 0; visibility: hidden; }
 body:not([data-view="loading"]) .loader-sketch { transform: scale(1.12); filter: blur(6px); }
@@ -69,10 +73,10 @@ body:not([data-view="loading"]) .loader-sketch { transform: scale(1.12); filter:
   padding: max(16px, env(safe-area-inset-top)) var(--gutter) 0; pointer-events: none;
 }
 .topbar > * { pointer-events: auto; }
-/* the star cat is the home button; her name joins it inside a section */
+/* the star cat is the home button; my name joins it inside a section */
 .mark { display: flex; align-items: center; gap: 10px; text-decoration: none; }
 .mark-name { width: 132px; transition: opacity .35s var(--out), transform .35s var(--out); }
-/* her star cat in the nav: always takes you back to the room */
+/* my star cat in the nav: always takes you back to the room */
 .nav-cat { display: grid; place-items: center; width: 52px; height: 48px; }
 .nav-cat img { width: 50px; rotate: 6deg; filter: drop-shadow(0 4px 6px rgb(30 22 49 / .22)); transition: rotate .35s var(--out), transform .2s var(--out); }
 @media (hover: hover) { .nav-cat:hover img { rotate: -8deg; } }
@@ -126,7 +130,7 @@ body:not([data-view="loading"]) .loader-sketch { transform: scale(1.12); filter:
 }
 [data-view="section"] .room-hint, [data-view="loading"] .room-hint, .no-room .room-hint { opacity: 0; }
 
-/* hotspots: white dots over each section's object, like the reference */
+/* hotspots: white dots over each section's object, smoothly */
 .hotspots { position: fixed; inset: 0; z-index: 9; pointer-events: none; transition: opacity .4s var(--out); }
 [data-view="section"] .hotspots, [data-view="loading"] .hotspots { opacity: 0; }
 [data-view="section"] .hotspot { pointer-events: none; }
@@ -154,7 +158,7 @@ body:not([data-view="loading"]) .loader-sketch { transform: scale(1.12); filter:
 [data-view="section"] .scene { visibility: visible; }
 .scene > * { pointer-events: auto; }
 
-/* Katrina's torn corner: her wavy edge over a fill in the section's colour. */
+/* my torn corner: my wavy edge over a fill in the section's colour. */
 .sheet { position: fixed; left: 0; top: 0; width: clamp(340px, 35vw, 660px); aspect-ratio: 1200 / 1016; pointer-events: none; }
 .sheet-fill { position: absolute; inset: 0; background: var(--sheet); -webkit-mask: url(assets/drawn/corner-fill.png) 0 0 / 100% 100% no-repeat; mask: url(assets/drawn/corner-fill.png) 0 0 / 100% 100% no-repeat; transition: background-color .6s var(--out); }
 .sheet-line { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -216,9 +220,16 @@ body:not([data-view="loading"]) .loader-sketch { transform: scale(1.12); filter:
 .bluecard h3.hand { margin: 16px 0 10px; }
 .bluecard h3.hand:first-child { margin-top: 0; }
 .bluecard h3.hand::after { background: #FFFDF8; opacity: .55; }
-.dots { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; margin: 0; padding: 0; list-style: none; }
-.dots li { position: relative; padding-left: 18px; font: 500 16px/1.4 var(--text); }
-.dots li::before { content: ''; position: absolute; left: 0; top: .5em; width: 8px; height: 8px; border-radius: 50% 45% 55% 50%; background: #0B1A33; }
+/* Skills read as a line you'd write on a résumé, not a grid of bullets. */
+.panel .skill-line { margin: 0 0 4px; max-width: none; font: 400 15.5px/1.75 var(--text); color: #0B1A33; text-wrap: pretty; }
+/* Plain ruled lists (awards, coursework): one thing per line, like a notebook page. */
+.plain { margin: 0; padding: 0; list-style: none; }
+.plain li { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; padding: 8px 2px 7px; border-bottom: 1.5px dashed color-mix(in srgb, var(--ink) 18%, transparent); font: 400 15.5px/1.35 var(--text); color: var(--ink); }
+.plain li:last-child { border-bottom: 0; }
+.plain li span { flex: none; font: 17px/1 var(--hand); color: var(--ink-soft); }
+.plain.starred li { position: relative; padding-left: 30px; }
+.plain.starred li::before { content: ''; position: absolute; left: 0; top: 5px; width: 21px; height: 22px; background: url(assets/drawn/star.png) center / contain no-repeat; rotate: -8deg; }
+.plain.starred li:nth-child(2n)::before { rotate: 9deg; }
 
 /* experience + education */
 .timeline { margin: 0; padding: 0 0 0 22px; list-style: none; border-left: 2px dashed color-mix(in srgb, var(--ink) 25%, transparent); }
@@ -354,7 +365,7 @@ body:not([data-view="loading"]) .loader-sketch { transform: scale(1.12); filter:
 .chip-work { background: var(--paper); color: var(--ink); rotate: -1deg; }
 .chip-work[aria-current="page"] { background: var(--tint); box-shadow: inset 0 0 0 2px var(--ink), 0 6px 16px -8px rgb(30 22 49 / .45); }
 
-/* ---------- home: her name + the star cat ---------- */
+/* ---------- home: my name + the star cat ---------- */
 .hero-title { display: flex; align-items: center; gap: 0; margin-bottom: 18px; }
 .hero-title .hero-name { flex: 1 1 auto; margin: 0; }
 [data-view="home"] .hero-role, [data-view="home"] .hero-note { color: var(--on-ground); }
@@ -471,7 +482,7 @@ body:not([data-section="projects"]) .m-arrow { pointer-events: none; }
 [data-section="projects"] .next-up { color: var(--on-ground); border-color: rgb(255 255 255 / .35); margin-inline: 8px; width: calc(100% - 16px); }
 [data-section="projects"] .next-up .hand { color: var(--on-ground); opacity: .8; }
 [data-section="projects"] .next-up img { filter: none; }
-/* Katrina's own handwriting lives only on the front page */
+/* my own handwriting lives only on the front page */
 .hero-note, .room-hint { font-family: var(--her-hand); }
 
 .sheet-grip { display: none; }
@@ -573,7 +584,7 @@ body.touched, body.touched * { cursor: auto !important; }
 .photo-pair .polaroid { width: 100%; margin: 0; }
 .photo-pair figcaption { font-size: 16px; }
 
-/* About: winning moment with Katrina's trophy doodles on the corner */
+/* About: winning moment with my trophy doodles on the corner */
 .polaroid.won { position: relative; }
 .won-trophies { position: absolute; right: -14px; top: -22px; display: flex; gap: 0; rotate: 10deg; filter: drop-shadow(0 4px 6px rgb(30 22 49 / .3)); }
 .won-trophies img { width: 44px; height: auto; }

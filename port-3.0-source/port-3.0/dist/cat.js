@@ -17,14 +17,12 @@ export async function createCat(model) {
   cat.rotation.y = Math.atan2(-.8, 1);          // the model faces +x; turn it toward the room
   model.add(cat);
 
-  let ctx = null;
+  // A real meow (assets/sounds/CREDITS.txt), fetched the first time the cat is clicked.
+  let mew = null;
   function meow() {
     try {
-      ctx ||= new AudioContext();
-      const o = ctx.createOscillator(), g = ctx.createGain(), now = ctx.currentTime;
-      o.type = 'triangle'; o.frequency.setValueAtTime(620, now); o.frequency.exponentialRampToValueAtTime(940, now + .12); o.frequency.exponentialRampToValueAtTime(480, now + .42);
-      g.gain.setValueAtTime(.0001, now); g.gain.exponentialRampToValueAtTime(.12, now + .05); g.gain.exponentialRampToValueAtTime(.0001, now + .5);
-      o.connect(g).connect(ctx.destination); o.start(now); o.stop(now + .52);
+      mew ||= Object.assign(new Audio('assets/sounds/meow.mp3'), { volume: .7 });
+      mew.currentTime = 0; mew.play().catch(() => {});
     } catch { /* no audio is fine */ }
   }
 

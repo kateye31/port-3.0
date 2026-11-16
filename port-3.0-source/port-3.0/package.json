@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node scripts/serve.mjs",
     "dev": "node scripts/serve.mjs",
-    "check": "node --check dist/ui.js && node --check dist/room.js && node --check dist/furnish.js && node --check dist/props.js && node --check dist/cat.js && node --check dist/education.js && node --check dist/art-style.js && node --check dist/sections.js && node --check dist/content.js",
+    "check": "node --check dist/ui.js && node --check dist/room.js && node --check dist/furnish.js && node --check dist/props.js && node --check dist/cat.js && node --check dist/education.js && node --check dist/art-style.js && node --check dist/sections.js && node --check dist/content.js && node --check dist/fabric.js && node --check dist/plants.js && node --check dist/furniture.js",
     "qa": "node checks/site-qa.mjs",
     "shots": "node checks/shots.mjs"
   },
