@@ -63,7 +63,17 @@ a { color: inherit; text-underline-offset: .18em; text-decoration-thickness: 1.5
 /* Only the number moves while things load. At 100% the sketch fades in, then the loader fades away to the room. */
 .loader-sketch { width: min(52vh, 72vw); opacity: 0; transition: opacity .45s var(--out), transform .9s var(--out), filter .9s var(--out); }
 .loader.full .loader-sketch { opacity: 1; }
-.loader-note { margin: 0; font: 22px/1 var(--hand); color: var(--ink-soft); }
+.loader-note { display: flex; align-items: center; gap: 12px; margin: 0; font: 22px/1 var(--hand); color: var(--ink-soft); }
+/* a little folding triangle beside the count, so the wait looks alive */
+.loader-tri { flex: none; width: 20px; aspect-ratio: 1; background: #826AED; clip-path: polygon(0 0, 100% 0, 100% 100%); animation: loader-fold 2s infinite cubic-bezier(.3, 1, 0, 1); }
+@keyframes loader-fold {
+  25%  { clip-path: polygon(0 0, 100% 0, 0 100%); background: #F05F5F; }
+  50%  { clip-path: polygon(0 0, 100% 100%, 0 100%); background: #3BC4D9; }
+  75%  { clip-path: polygon(100% 0, 100% 100%, 0 100%); background: #F2B544; }
+  100% { clip-path: polygon(100% 0, 100% 100%, 0 0); background: #826AED; }
+}
+.loader.full .loader-tri { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .loader-tri { animation: none; } }
 body:not([data-view="loading"]) .loader { opacity: 0; visibility: hidden; }
 body:not([data-view="loading"]) .loader-sketch { transform: scale(1.12); filter: blur(6px); }
 
