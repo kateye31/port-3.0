@@ -101,7 +101,6 @@ const render = {
     <p class="aside">Pick one and it plays on the TV.</p>
     <h3 class="hand">on the record player</h3>
     <ul class="albums">${ALBUMS.map((a, i) => `<li><button data-album="${i}" aria-pressed="false" title="${esc(a.title)} · ${esc(a.artist)}"><img src="assets/albums/${a.image}.webp" alt="" loading="lazy"><span><b>${esc(a.title)}</b>${esc(a.artist)}</span></button></li>`).join('')}</ul>
-    <p class="aside">Pick a record to drop the needle. What plays is public-domain piano, so the albums themselves stay on my shelf.</p>
     <h3 class="hand">front row seats</h3>
     <ul class="playbills">${OFF_CLOCK.playbills.map(p => `<li><span class="pb-head"><b>PLAYBILL</b><small>${esc(p.theatre)}</small></span><img src="assets/musicals/${p.image}.webp" alt="${esc(p.show)} poster art" loading="lazy"></li>`).join('')}</ul>
     <p>${esc(OFF_CLOCK.stage)}</p>
@@ -180,7 +179,6 @@ document.addEventListener('click', e => {
     const on = album.getAttribute('aria-pressed') !== 'true';
     document.querySelectorAll('[data-album]').forEach(b => b.setAttribute('aria-pressed', String(on && b === album)));
     room?.playAlbum(on ? Number(album.dataset.album) : null);
-    if (on) music.play(Number(album.dataset.album)); else music.pause();
     return;
   }
   const see = e.target.closest('[data-see]');
@@ -383,37 +381,6 @@ if (!reduced) setInterval(() => {
   n.style.cssText = `left:${vinylAt.x}px;top:${vinylAt.y}px;--dx:${drift}px;--rot:${(Math.random() - .5) * 40}deg;--s:${body.dataset.section === 'offclock' ? .8 : .5}`;
   $('#notes').append(n); n.addEventListener('animationend', () => n.remove());
 }, 2600);
-
-// ---------------- the record player's music ----------------
-// Public-domain piano (assets/music/CREDITS.txt). Nothing loads or plays until
-// someone asks for it, by picking a record or from the menu.
-const TRACKS = [
-  { title: 'Chopin, Nocturne Op. 9 No. 2', src: 'assets/music/nocturne-op9-2.mp3', type: 'audio/mpeg' },
-  { title: 'Satie, Gymnopédie No. 1', src: 'assets/music/gymnopedie-1.ogg', type: 'audio/ogg; codecs="vorbis"' },
-  { title: 'Satie, Gnossienne No. 1', src: 'assets/music/gnossienne-1.ogg', type: 'audio/ogg; codecs="vorbis"' },
-];
-const music = (() => {
-  const menuButton = $('#music-button');
-  let audio = null, list = TRACKS, track = 0, playing = false;
-  function paint() { menuButton.textContent = `music: ${playing ? 'on' : 'off'}`; menuButton.setAttribute('aria-pressed', String(playing)); }
-  function ready() {
-    if (audio) return;
-    audio = new Audio(); audio.preload = 'none'; audio.volume = .6;
-    list = TRACKS.filter(t => audio.canPlayType(t.type)); if (!list.length) list = TRACKS.slice(0, 1);
-    audio.addEventListener('ended', () => play(track + 1));
-    audio.addEventListener('error', () => { playing = false; paint(); });
-  }
-  function play(i = track) {
-    ready(); const next = ((i % list.length) + list.length) % list.length;
-    if (next !== track || !audio.src) { track = next; audio.src = list[track].src; }
-    playing = true; paint();
-    audio.play().catch(() => { playing = false; paint(); });
-  }
-  function pause() { audio?.pause(); playing = false; paint(); }
-  menuButton.addEventListener('click', () => { if (playing) pause(); else play(); });
-  paint();
-  return { play, pause };
-})();
 
 // ---------------- project demos ----------------
 // Videos only exist while Projects is open: the card plays the demo and the
