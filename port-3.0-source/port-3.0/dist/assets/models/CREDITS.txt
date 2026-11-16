@@ -1,0 +1,5 @@
+k-*.glb   Kenney Furniture Kit 2.0, CC0 (kenney.nl) — see KENNEY-LICENSE.txt
+cat.glb   "Cat" by elkiotbear, CC-BY 3.0, via Poly Pizza (poly.pizza/m/ovFy5UldDq)
+globe.glb "Globe" by jeremy, CC-BY 3.0, via Poly Pizza (poly.pizza/m/2445qv4neDQ)
+easel.glb "Easel" by reyshapes, CC0, via Poly Pizza (poly.pizza/m/2ZP3o8hyPA)
+slippers.glb "Slippers" by Isa Lousberg, CC0, via Poly Pizza (poly.pizza/m/XV1WqNYen3)

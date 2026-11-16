@@ -1,0 +1,2 @@
+Adventor-Regular.otf and Adventor-Bold.otf are TeX Gyre Adventor (GUST e-foundry),
+released under the GUST Font License: https://www.gust.org.pl/projects/e-foundry/licenses
