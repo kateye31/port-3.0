@@ -771,3 +771,69 @@ body.touched, body.touched * { cursor: auto !important; }
 .exp-logo { float: right; display: grid; place-items: center; margin: -4px 0 6px 12px; padding: 6px 10px; min-height: 44px; border-radius: 10px 12px 9px 13px; background: #fff; box-shadow: 0 8px 18px -12px rgb(30 22 49 / .6); rotate: 2deg; }
 .timeline li:nth-child(2n) .exp-logo { rotate: -2.5deg; }
 .exp-logo img { width: auto; max-width: 128px; max-height: 32px; }
+
+/* ---------- phones: the sheet only has the lower half of the screen, so everything
+   inside it is set a size smaller than on desktop. Desktop is untouched. ---------- */
+@media (max-width: 759px) and (min-height: 501px), (max-width: 1100px) and (orientation: portrait) {
+  .sheet-heading { font-size: clamp(26px, 7.6vw, 34px); }
+  .panel-inner { padding: 18px 18px 96px; }
+  .panel p { font-size: 14.5px; line-height: 1.55; }
+  .panel .lede { font-size: 16.5px; line-height: 1.45; }
+  .panel h3 { font-size: 20px; }
+  .panel h3.hand { margin: 22px 0 10px; font-size: 19px; }
+  .panel .aside { margin-top: 18px; font-size: 16px; }
+  .when { font-size: 16px !important; }
+  .next-up { margin-top: 26px; padding-top: 14px; font-size: 22px; }
+  .next-up img { width: 44px; }
+  .see-more { font-size: 18px; }
+
+  /* photos */
+  .polaroid { width: 56%; padding: 7px 7px 6px; margin-bottom: 16px; }
+  .polaroid.wide-shot { width: 60%; }
+  .polaroid figcaption { padding-top: 6px; font-size: 15px; }
+  .photo-pair, .project-photos { gap: 8px; margin-top: 16px; }
+  .photo-pair figcaption, .project-photos figcaption { font-size: 13px; }
+  .won-trophies img { width: 30px; }
+
+  /* projects */
+  .paper-card { padding: 20px 16px 16px; }
+  .clip { left: 16px; top: -20px; width: 22px; height: 54px; }
+  .card-star { right: -10px; top: -16px; width: 46px; }
+  .card-meta { margin-left: 22px !important; font-size: 11px; }
+  .card-title { font-size: 30px !important; }
+  .card-title small { font-size: 16px; }
+  .card-wins { margin-bottom: 10px !important; }
+  .card-wins img { width: 24px; }
+  .card-wins span { font-size: 15px; }
+  .chips { gap: 6px; margin-bottom: 12px; }
+  .chips li { padding: 5px 9px 4px; font-size: 12px; border-radius: 7px; }
+  .card-text { font-size: 14.5px; line-height: 1.55; }
+  .card-note { font-size: 15px !important; }
+  .card-links a { font-size: 17px; }
+
+  /* books: three across, like a shelf */
+  .book-grid { grid-template-columns: repeat(3, 1fr); gap: 16px 12px; }
+  .book-grid img { margin-bottom: 6px; }
+  .book-grid b { font-size: 12px; }
+  .book-grid span { font-size: 13px; }
+
+  /* skills, education, experience */
+  .badges { gap: 5px 4px; margin-bottom: 14px; }
+  .badges img { height: 18px; }
+  .panel .skill-line { font-size: 14px; }
+  .school { padding: 12px 14px 4px; margin-bottom: 10px; }
+  .plain li { padding: 7px 2px 6px; font-size: 14px; }
+  .plain li span { font-size: 14px; }
+  .orgs b { font-size: 12px; }
+  .moments b { font-size: 14.5px; }
+
+  /* off the clock */
+  .shows { gap: 6px; }
+  .shows button { padding: 5px 10px 4px; font-size: 12.5px; }
+  .albums { grid-template-columns: repeat(4, 1fr); gap: 7px; }
+
+  /* say hello */
+  .big-link { font-size: 19px; }
+  .contact-list a { padding: 11px 4px; font-size: 19px; }
+  .contact-list a span { font-size: 14px; }
+}
